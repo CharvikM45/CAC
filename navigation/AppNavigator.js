@@ -7,6 +7,7 @@ import HomeScreen from '../screens/HomeScreen';
 import FavoritesScreen from '../screens/FavoritesScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 import ConversationsScreen from '../screens/ConversationsScreen';
+import SimulationsScreen from '../screens/SimulationsScreen';
 
 const Tab = createBottomTabNavigator();
 const { width: screenWidth } = Dimensions.get('window');
@@ -69,6 +70,21 @@ const AppNavigator = ({ userData, onUserUpdate, onLogout }) => {
           {(props) => <HomeScreen {...props} userData={userData} />}
         </Tab.Screen>
         
+        <Tab.Screen
+          name="Simulations"
+          options={{
+            tabBarIcon: ({ focused, color, size }) => (
+              <Ionicons 
+                name={focused ? 'analytics' : 'analytics-outline'} 
+                size={size || 24} 
+                color={color} 
+              />
+            ),
+            tabBarLabel: 'Simulations',
+          }}
+          component={SimulationsScreen}
+        />
+
         <Tab.Screen
           name="Favorites"
           options={{
