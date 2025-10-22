@@ -1250,3 +1250,51 @@ export const materialsData = [
     "Molecular_Notes": "Long-chain fatty acid ester representing beeswax components."
   }
 ];
+
+// Runtime augmentation: load retention fields from CSV and merge into materials
+// Consumers that need the new columns should call loadMaterialsDataWithRetention()
+import { Asset } from 'expo-asset';
+import * as FileSystem from 'expo-file-system';
+import { parseCSVData } from '../utils/dataService';
+
+let cachedMaterialsWithRetention = null;
+
+const RETENTION_KEY_REGEX = /^(Increase|Decrease)_(Temp|Pressure|Humidity|UV)_(1w|1m|1y|10y)_%Retention$/;
+
+export async function loadMaterialsDataWithRetention() {
+  if (cachedMaterialsWithRetention) return cachedMaterialsWithRetention;
+
+  try {
+    const [asset] = await Asset.loadAsync([require('../assets/data/FullDatasheet.csv')]);
+    const uri = asset.localUri || asset.uri;
+    const text = uri && uri.startsWith('http')
+      ? await (await fetch(uri)).text()
+      : await FileSystem.readAsStringAsync(uri, { encoding: FileSystem.EncodingType.UTF8 });
+    const rows = parseCSVData(text);
+
+    const nameToRetention = new Map();
+    for (const row of rows) {
+      const name = (row['Material Name'] || '').trim();
+      if (!name) continue;
+      const retentionFields = {};
+      for (const [key, value] of Object.entries(row)) {
+        if (RETENTION_KEY_REGEX.test(key)) {
+          retentionFields[key] = value;
+        }
+      }
+      nameToRetention.set(name.toLowerCase(), retentionFields);
+    }
+
+    cachedMaterialsWithRetention = materialsData.map((item) => {
+      const name = (item['Material Name'] || '').toLowerCase();
+      const extra = nameToRetention.get(name) || {};
+      return { ...item, ...extra };
+    });
+    return cachedMaterialsWithRetention;
+  } catch (e) {
+    console.error('Failed loading FullDatasheet.csv for retention merge:', e);
+    // Fallback: return original dataset
+    cachedMaterialsWithRetention = materialsData;
+    return cachedMaterialsWithRetention;
+  }
+}

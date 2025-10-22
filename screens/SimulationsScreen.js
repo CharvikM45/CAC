@@ -133,10 +133,11 @@ const SimulationsScreen = () => {
   const loadCsv = async () => {
     try {
       setLoading(true);
-      const asset = Asset.fromModule(require('../data/FullDatasheet.csv'));
-      await asset.downloadAsync();
+      const [asset] = await Asset.loadAsync([require('../assets/data/FullDatasheet.csv')]);
       const uri = asset.localUri || asset.uri;
-      const text = await FileSystem.readAsStringAsync(uri, { encoding: FileSystem.EncodingType.UTF8 });
+      const text = uri && uri.startsWith('http')
+        ? await (await fetch(uri)).text()
+        : await FileSystem.readAsStringAsync(uri, { encoding: FileSystem.EncodingType.UTF8 });
       const rows = parseCSVData(text);
       setCsvRows(rows);
     } catch (e) {
