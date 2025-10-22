@@ -133,7 +133,7 @@ const SimulationsScreen = () => {
   const loadCsv = async () => {
     try {
       setLoading(true);
-      const asset = Asset.fromModule(require('../data/MatAidDatasheet.csv'));
+      const asset = Asset.fromModule(require('../data/FullDatasheet.csv'));
       await asset.downloadAsync();
       const uri = asset.localUri || asset.uri;
       const text = await FileSystem.readAsStringAsync(uri, { encoding: FileSystem.EncodingType.UTF8 });
