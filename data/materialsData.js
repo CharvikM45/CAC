@@ -1254,7 +1254,7 @@ export const materialsData = [
 // Runtime augmentation: load retention fields from CSV and merge into materials
 // Consumers that need the new columns should call loadMaterialsDataWithRetention()
 import { Asset } from 'expo-asset';
-import * as FileSystem from 'expo-file-system';
+import * as FileSystem from 'expo-file-system/legacy';
 import { parseCSVData } from '../utils/dataService';
 
 let cachedMaterialsWithRetention = null;
@@ -1269,7 +1269,7 @@ export async function loadMaterialsDataWithRetention() {
     const uri = asset.localUri || asset.uri;
     const text = uri && uri.startsWith('http')
       ? await (await fetch(uri)).text()
-      : await FileSystem.readAsStringAsync(uri, { encoding: FileSystem.EncodingType.UTF8 });
+      : await FileSystem.readAsStringAsync(uri, { encoding: 'utf8' });
     const rows = parseCSVData(text);
 
     const nameToRetention = new Map();

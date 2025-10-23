@@ -11,7 +11,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '../constants/colors';
 import { Asset } from 'expo-asset';
-import * as FileSystem from 'expo-file-system';
+import * as FileSystem from 'expo-file-system/legacy';
 import { parseCSVData } from '../utils/dataService';
 import MaterialPickerModal from '../components/MaterialPickerModal';
 import { WebView } from 'react-native-webview';
@@ -60,12 +60,23 @@ const ChartView = ({ labels, data, color = '#1A73E8' }) => {
         <body>
           <canvas id="c"></canvas>
           <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+          <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2"></script>
           <script>
             (function(){
               const ctx = document.getElementById('c').getContext('2d');
               const labels = ${JSON.stringify(labels)};
               const data = ${JSON.stringify(data)};
-              new Chart(ctx, {
+              try {
+                // Attempt to register zoom plugin if available
+                if (window.Chart && (window['chartjs-plugin-zoom'] || window.ChartZoom || window.ChartZoomPlugin)) {
+                  const plugin = window['chartjs-plugin-zoom'] || window.ChartZoom || window.ChartZoomPlugin;
+                  if (plugin && typeof window.Chart.register === 'function') {
+                    window.Chart.register(plugin);
+                  }
+                }
+              } catch (e) { /* no-op */ }
+
+              const chart = new Chart(ctx, {
                 type: 'line',
                 data: {
                   labels,
@@ -95,8 +106,34 @@ const ChartView = ({ labels, data, color = '#1A73E8' }) => {
                   },
                   plugins: {
                     legend: { display: false },
+                    zoom: {
+                      zoom: {
+                        wheel: { enabled: true },
+                        pinch: { enabled: true },
+                        mode: 'xy'
+                      },
+                      pan: {
+                        enabled: true,
+                        mode: 'xy'
+                      },
+                      limits: {
+                        y: { min: 0, max: 100 }
+                      }
+                    }
                   }
                 }
+              });
+
+              // Double-tap or double-click to reset zoom
+              const canvas = document.getElementById('c');
+              let lastTap = 0;
+              canvas.addEventListener('click', function(e) {
+                const currentTime = new Date().getTime();
+                const tapLength = currentTime - lastTap;
+                if (tapLength < 300 && tapLength > 0) {
+                  if (chart && typeof chart.resetZoom === 'function') chart.resetZoom();
+                }
+                lastTap = currentTime;
               });
             })();
           </script>
@@ -137,7 +174,7 @@ const SimulationsScreen = () => {
       const uri = asset.localUri || asset.uri;
       const text = uri && uri.startsWith('http')
         ? await (await fetch(uri)).text()
-        : await FileSystem.readAsStringAsync(uri, { encoding: FileSystem.EncodingType.UTF8 });
+        : await FileSystem.readAsStringAsync(uri, { encoding: 'utf8' });
       const rows = parseCSVData(text);
       setCsvRows(rows);
     } catch (e) {
@@ -252,7 +289,7 @@ const SimulationsScreen = () => {
 
           {/* Chart */}
           <View style={styles.card}>
-            <View style={styles.rowBetween}>
+            <View style={styles.chartHeaderRow}>
               <Text style={styles.cardTitle}>% Retention Over Time</Text>
               <Text style={styles.infoText}>{selectedCondLabel}</Text>
             </View>
@@ -313,7 +350,7 @@ const styles = StyleSheet.create({
   },
   content: {
     padding: 16,
-    paddingBottom: 40,
+    paddingBottom: 120,
     gap: 12,
   },
   card: {
@@ -327,6 +364,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+  },
+  chartHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 16,
   },
   cardTitle: {
     color: Colors.text,

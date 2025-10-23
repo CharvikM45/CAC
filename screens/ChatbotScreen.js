@@ -8,13 +8,13 @@ import {
   StyleSheet,
   KeyboardAvoidingView,
   Platform,
-  SafeAreaView,
   StatusBar,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '../constants/colors';
 import { recommendMaterials } from '../utils/recommender';
 import { generateGeminiSuggestion } from '../utils/geminiClient';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const SYSTEM_PROMPT = `You are a materials design assistant. Given a product idea or problem, suggest sustainable, biodegradable materials. Favor high durability, high moisture resistance for humid conditions, low cost, and high biodegradability. Provide concise justification in 2-3 sentences and list 3-5 materials.`;
 
@@ -84,6 +84,9 @@ const MessageBubble = ({ role, text, timestamp }) => {
 };
 
 const ChatbotScreen = () => {
+  const insets = useSafeAreaInsets();
+  // Clearance to sit input above the floating bottom tab bar (height 75 + bottom offset 25 + extra spacing)
+  const TABBAR_CLEARANCE = 75 + 25 + 12;
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState([
     {
@@ -176,7 +179,7 @@ const ChatbotScreen = () => {
   );
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { paddingBottom: (insets?.bottom || 0) + TABBAR_CLEARANCE }]} edges={["top", "bottom"]}>
       <StatusBar barStyle="light-content" backgroundColor={ChatPalette.appBarBg} />
 
       {/* App Bar */}
@@ -208,14 +211,14 @@ const ChatbotScreen = () => {
           data={messages}
           keyExtractor={(item) => item.id}
           renderItem={renderItem}
-          contentContainerStyle={styles.listContent}
+          contentContainerStyle={[styles.listContent, { paddingBottom: 20 }]}
           showsVerticalScrollIndicator={false}
         />
 
         {loading && <TypingBubble />}
 
         {/* Input bar */}
-        <View style={styles.inputContainer}>
+        <View style={[styles.inputContainer, { paddingBottom: (insets?.bottom || 0) }]}>
           <View style={styles.inputWrapper}>
             <TouchableOpacity style={styles.leftIconBtn}>
               <Ionicons name="attach-outline" size={22} color={ChatPalette.icon} />

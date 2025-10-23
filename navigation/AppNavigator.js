@@ -8,6 +8,7 @@ import FavoritesScreen from '../screens/FavoritesScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 import ConversationsScreen from '../screens/ConversationsScreen';
 import SimulationsScreen from '../screens/SimulationsScreen';
+import ChatbotScreen from '../screens/ChatbotScreen';
 
 const Tab = createBottomTabNavigator();
 const { width: screenWidth } = Dimensions.get('window');
@@ -83,6 +84,21 @@ const AppNavigator = ({ userData, onUserUpdate, onLogout }) => {
             tabBarLabel: 'Simulations',
           }}
           component={SimulationsScreen}
+        />
+
+        <Tab.Screen
+          name="Chatbot"
+          options={{
+            tabBarIcon: ({ focused, color, size }) => (
+              <Ionicons 
+                name={focused ? 'bulb' : 'bulb-outline'} 
+                size={size || 24} 
+                color={color} 
+              />
+            ),
+            tabBarLabel: 'Chatbot',
+          }}
+          component={ChatbotScreen}
         />
 
         <Tab.Screen
