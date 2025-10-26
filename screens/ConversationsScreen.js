@@ -20,10 +20,18 @@ const ConversationsScreen = ({ currentUserId, onOpenChat }) => {
 
   useEffect(() => {
     console.log('ConversationsScreen mounted with currentUserId:', currentUserId);
-    loadConversations();
     
-    // Listen for new messages
-    socketService.on('new-message', handleNewMessage);
+    if (currentUserId) {
+      loadConversations();
+      
+      // Connect to socket service with error handling
+      if (currentUserId) {
+        socketService.connect(currentUserId);
+      }
+      
+      // Listen for new messages
+      socketService.on('new-message', handleNewMessage);
+    }
     
     return () => {
       socketService.off('new-message', handleNewMessage);
@@ -143,20 +151,12 @@ const ConversationsScreen = ({ currentUserId, onOpenChat }) => {
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Messages</Text>
-        <Text style={styles.headerSubtitle}>
+      {/* App Bar */}
+      <View style={styles.appBar}>
+        <Text style={styles.appBarTitle}>Messages</Text>
+        <Text style={styles.appBarSubtitle}>
           {conversations.length} conversation{conversations.length !== 1 ? 's' : ''}
         </Text>
-        <TouchableOpacity 
-          style={styles.debugButton}
-          onPress={() => {
-            console.log('Manual refresh triggered');
-            loadConversations();
-          }}
-        >
-          <Text style={styles.debugButtonText}>Debug Refresh</Text>
-        </TouchableOpacity>
       </View>
 
       <FlatList
@@ -201,23 +201,23 @@ const styles = StyleSheet.create({
     color: Colors.textSecondary,
     marginTop: 16,
   },
-  header: {
-    paddingTop: 60,
-    paddingBottom: 20,
-    paddingHorizontal: 20,
+  appBar: {
+    paddingTop: 56,
+    paddingBottom: 12,
+    paddingHorizontal: 16,
     backgroundColor: Colors.surface,
     borderBottomWidth: 1,
     borderBottomColor: Colors.border,
   },
-  headerTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
+  appBarTitle: {
     color: Colors.text,
-    marginBottom: 4,
+    fontSize: 20,
+    fontWeight: '700',
   },
-  headerSubtitle: {
-    fontSize: 14,
+  appBarSubtitle: {
     color: Colors.textSecondary,
+    fontSize: 12,
+    marginTop: 4,
   },
   conversationsList: {
     flex: 1,

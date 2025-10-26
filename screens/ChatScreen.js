@@ -294,7 +294,8 @@ const ChatScreen = ({ route, navigation }) => {
       style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
-      <View style={styles.header}>
+      {/* App Bar */}
+      <View style={styles.appBar}>
         <TouchableOpacity
           style={styles.backButton}
           onPress={() => navigation.goBack()}
@@ -303,8 +304,8 @@ const ChatScreen = ({ route, navigation }) => {
         </TouchableOpacity>
         
         <View style={styles.headerInfo}>
-          <Text style={styles.headerName}>{otherUser.name}</Text>
-          <Text style={styles.headerStatus}>Online</Text>
+          <Text style={styles.appBarTitle}>{otherUser.name}</Text>
+          <Text style={styles.appBarSubtitle}>Online</Text>
         </View>
         
         <View style={styles.headerActions}>
@@ -388,15 +389,25 @@ const styles = StyleSheet.create({
     color: Colors.textSecondary,
     marginTop: 16,
   },
-  header: {
+  appBar: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingTop: 60,
-    paddingBottom: 16,
+    paddingTop: 56,
+    paddingBottom: 12,
     paddingHorizontal: 16,
     backgroundColor: Colors.surface,
     borderBottomWidth: 1,
     borderBottomColor: Colors.border,
+  },
+  appBarTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: Colors.text,
+  },
+  appBarSubtitle: {
+    fontSize: 12,
+    color: Colors.textSecondary,
+    marginTop: 2,
   },
   backButton: {
     marginRight: 12,

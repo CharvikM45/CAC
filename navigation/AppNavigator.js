@@ -9,6 +9,8 @@ import ProfileScreen from '../screens/ProfileScreen';
 import ConversationsScreen from '../screens/ConversationsScreen';
 import SimulationsScreen from '../screens/SimulationsScreen';
 import ChatbotScreen from '../screens/ChatbotScreen';
+import ImageDetectionScreen from '../screens/ImageDetectionScreen';
+import AdminUsersScreen from '../screens/AdminUsersScreen';
 
 const Tab = createBottomTabNavigator();
 const { width: screenWidth } = Dimensions.get('window');
@@ -87,6 +89,21 @@ const AppNavigator = ({ userData, onUserUpdate, onLogout }) => {
         />
 
         <Tab.Screen
+          name="ImageDetection"
+          options={{
+            tabBarIcon: ({ focused, color, size }) => (
+              <Ionicons 
+                name={focused ? 'camera' : 'camera-outline'} 
+                size={size || 24} 
+                color={color} 
+              />
+            ),
+            tabBarLabel: 'Detect',
+          }}
+          component={ImageDetectionScreen}
+        />
+
+        <Tab.Screen
           name="Chatbot"
           options={{
             tabBarIcon: ({ focused, color, size }) => (
@@ -143,6 +160,21 @@ const AppNavigator = ({ userData, onUserUpdate, onLogout }) => {
             />
           )}
         </Tab.Screen>
+
+        <Tab.Screen
+          name="Admin"
+          options={{
+            tabBarIcon: ({ focused, color, size }) => (
+              <Ionicons 
+                name={focused ? 'settings' : 'settings-outline'} 
+                size={size || 24} 
+                color={color} 
+              />
+            ),
+            tabBarLabel: 'Admin',
+          }}
+          component={AdminUsersScreen}
+        />
 
         <Tab.Screen
           name="Profile"

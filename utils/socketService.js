@@ -1,38 +1,80 @@
 import io from 'socket.io-client';
 import apiService from './apiService';
+import { Platform } from 'react-native';
+
+// Get the correct server URL based on platform
+const getServerUrl = () => {
+  if (Platform.OS === 'web') {
+    return 'http://localhost:3001';
+  }
+  // For mobile devices, use your computer's IP address
+  // You'll need to replace this with your actual IP address
+  // You can find it by running: ipconfig getifaddr en0 (on Mac) or ipconfig (on Windows)
+  return 'http://192.168.1.10:3001'; // Your actual IP address
+};
 
 class SocketService {
   constructor() {
     this.socket = null;
     this.isConnected = false;
     this.eventListeners = new Map();
+    this.currentUserId = null;
   }
 
   connect(userId) {
-    if (this.socket && this.isConnected) {
+    if (!userId) {
+      console.warn('SocketService: No userId provided for connection');
       return;
     }
 
-    this.socket = io('http://localhost:3001', {
-      transports: ['websocket'],
+    // If already connected with the same user, don't reconnect
+    if (this.socket && this.isConnected && this.currentUserId === userId) {
+      console.log('SocketService: Already connected with same user, skipping connection');
+      return;
+    }
+
+    console.log('SocketService: Attempting to connect with userId:', userId);
+    this.currentUserId = userId;
+
+    // Disconnect existing socket if any
+    if (this.socket) {
+      this.socket.disconnect();
+    }
+
+    this.socket = io(getServerUrl(), {
+      transports: ['websocket', 'polling'], // Add polling as fallback
+      timeout: 10000, // 10 second timeout
+      forceNew: true, // Force new connection
     });
 
     this.socket.on('connect', () => {
-      console.log('Connected to server');
+      console.log('SocketService: Connected to server');
       this.isConnected = true;
       this.socket.emit('join', userId);
       this.emit('connected');
     });
 
-    this.socket.on('disconnect', () => {
-      console.log('Disconnected from server');
+    this.socket.on('disconnect', (reason) => {
+      console.log('SocketService: Disconnected from server, reason:', reason);
       this.isConnected = false;
       this.emit('disconnected');
     });
 
     this.socket.on('connect_error', (error) => {
-      console.error('Connection error:', error);
+      console.error('SocketService: Connection error:', error);
+      this.isConnected = false;
       this.emit('connection-error', error);
+    });
+
+    this.socket.on('reconnect', (attemptNumber) => {
+      console.log('SocketService: Reconnected after', attemptNumber, 'attempts');
+      this.isConnected = true;
+      this.socket.emit('join', userId);
+      this.emit('connected');
+    });
+
+    this.socket.on('reconnect_error', (error) => {
+      console.error('SocketService: Reconnection error:', error);
     });
 
     // Message events
@@ -64,9 +106,11 @@ class SocketService {
 
   disconnect() {
     if (this.socket) {
+      console.log('SocketService: Disconnecting socket');
       this.socket.disconnect();
       this.socket = null;
       this.isConnected = false;
+      this.currentUserId = null;
     }
   }
 

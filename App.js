@@ -4,6 +4,7 @@ import { StyleSheet, View, ActivityIndicator } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { Colors } from './constants/colors';
 import authService from './utils/authService';
+import socketService from './utils/socketService';
 import AuthNavigator from './navigation/AuthNavigator';
 import MainNavigator from './navigation/MainNavigator';
 
@@ -19,6 +20,11 @@ export default function App() {
     try {
       const user = await authService.getCurrentUser();
       setUserData(user);
+      
+      // Connect to WebSocket when user is authenticated
+      if (user && user.id) {
+        socketService.connect(user.id);
+      }
     } catch (error) {
       console.error('Error checking auth status:', error);
     } finally {
@@ -28,10 +34,18 @@ export default function App() {
 
   const handleLogin = (user) => {
     setUserData(user);
+    // Connect to WebSocket after login
+    if (user && user.id) {
+      socketService.connect(user.id);
+    }
   };
 
   const handleRegister = (user) => {
     setUserData(user);
+    // Connect to WebSocket after registration
+    if (user && user.id) {
+      socketService.connect(user.id);
+    }
   };
 
   const handleUserUpdate = (updatedUser) => {
@@ -40,6 +54,8 @@ export default function App() {
 
   const handleLogout = () => {
     setUserData(null);
+    // Disconnect WebSocket on logout
+    socketService.disconnect();
   };
 
   if (loading) {

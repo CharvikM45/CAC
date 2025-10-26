@@ -320,9 +320,10 @@ const HomeScreen = ({ userData }) => {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        <View style={styles.header}>
-          <Text style={styles.greeting}>Hello, {userData?.name}!</Text>
-          <Text style={styles.subtitle}>Explore sustainable materials</Text>
+        {/* App Bar */}
+        <View style={styles.appBar}>
+          <Text style={styles.appBarTitle}>Explore</Text>
+          <Text style={styles.appBarSubtitle}>Discover sustainable materials</Text>
         </View>
 
         <View style={styles.searchContainer}>
@@ -564,19 +565,23 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: Colors.textSecondary,
   },
-  header: {
-    padding: 20,
-    paddingTop: 80,
+  appBar: {
+    paddingTop: 56,
+    paddingBottom: 12,
+    paddingHorizontal: 16,
+    backgroundColor: Colors.surface,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.border,
   },
-  greeting: {
-    fontSize: 28,
-    fontWeight: 'bold',
+  appBarTitle: {
     color: Colors.text,
-    marginBottom: 4,
+    fontSize: 20,
+    fontWeight: '700',
   },
-  subtitle: {
-    fontSize: 16,
+  appBarSubtitle: {
     color: Colors.textSecondary,
+    fontSize: 12,
+    marginTop: 4,
   },
   searchContainer: {
     flexDirection: 'row',

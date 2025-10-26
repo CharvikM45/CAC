@@ -38,12 +38,15 @@ const ProfileScreen = ({ userData, onUserUpdate, onLogout, navigation }) => {
         department: userData.department || '',
       });
       
-      // Connect to socket service
-      socketService.connect(userData.id);
+      // Connect to socket service with error handling
+      if (userData.id) {
+        socketService.connect(userData.id);
+      }
     }
     
     return () => {
-      socketService.disconnect();
+      // Don't disconnect here as other screens might be using the socket
+      // socketService.disconnect();
     };
   }, [userData]);
 
@@ -181,6 +184,12 @@ const ProfileScreen = ({ userData, onUserUpdate, onLogout, navigation }) => {
         <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
       }
     >
+      {/* App Bar */}
+      <View style={styles.appBar}>
+        <Text style={styles.appBarTitle}>Profile</Text>
+        <Text style={styles.appBarSubtitle}>Manage your account settings</Text>
+      </View>
+
       <View style={styles.header}>
         <View style={styles.avatarContainer}>
           <Ionicons name="person" size={40} color={Colors.primary} />
@@ -381,6 +390,24 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Colors.background,
+  },
+  appBar: {
+    paddingTop: 56,
+    paddingBottom: 12,
+    paddingHorizontal: 16,
+    backgroundColor: Colors.surface,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.border,
+  },
+  appBarTitle: {
+    color: Colors.text,
+    fontSize: 20,
+    fontWeight: '700',
+  },
+  appBarSubtitle: {
+    color: Colors.textSecondary,
+    fontSize: 12,
+    marginTop: 4,
   },
   header: {
     alignItems: 'center',

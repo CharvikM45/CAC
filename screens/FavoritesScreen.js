@@ -100,6 +100,12 @@ const FavoritesScreen = () => {
 
   return (
     <View style={styles.container}>
+      {/* App Bar */}
+      <View style={styles.appBar}>
+        <Text style={styles.appBarTitle}>Favorites</Text>
+        <Text style={styles.appBarSubtitle}>Your saved materials</Text>
+      </View>
+
       <View style={styles.header}>
         <Text style={styles.title}>Your Favorites</Text>
         {favorites.length > 0 && (
@@ -146,12 +152,30 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: Colors.textSecondary,
   },
+  appBar: {
+    paddingTop: 56,
+    paddingBottom: 12,
+    paddingHorizontal: 16,
+    backgroundColor: Colors.surface,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.border,
+  },
+  appBarTitle: {
+    color: Colors.text,
+    fontSize: 20,
+    fontWeight: '700',
+  },
+  appBarSubtitle: {
+    color: Colors.textSecondary,
+    fontSize: 12,
+    marginTop: 4,
+  },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     padding: 20,
-    paddingTop: 80,
+    paddingTop: 20,
   },
   title: {
     fontSize: 28,

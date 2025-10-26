@@ -1,6 +1,18 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Platform } from 'react-native';
 
-const API_BASE_URL = 'http://localhost:3001/api';
+// Get the correct server URL based on platform
+const getServerUrl = () => {
+  if (Platform.OS === 'web') {
+    return 'http://localhost:3001';
+  }
+  // For mobile devices, use your computer's IP address
+  // You'll need to replace this with your actual IP address
+  // You can find it by running: ipconfig getifaddr en0 (on Mac) or ipconfig (on Windows)
+  return 'http://192.168.1.10:3001'; // Your actual IP address
+};
+
+const API_BASE_URL = `${getServerUrl()}/api`;
 
 class ApiService {
   constructor() {

@@ -108,6 +108,7 @@ const LoginScreen = ({ onLogin, onNavigateToRegister }) => {
           </TouchableOpacity>
         </View>
 
+
         <View style={styles.resetContainer}>
           <TouchableOpacity onPress={handleResetData}>
             <Text style={styles.resetText}>Reset App Data</Text>
