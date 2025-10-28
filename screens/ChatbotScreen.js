@@ -13,7 +13,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '../constants/colors';
 import { recommendMaterials } from '../utils/recommender';
-import { generateGeminiSuggestion } from '../utils/geminiClient';
+const { generateGeminiSuggestion: generateOpenAISuggestion } = require('../utils/geminiClient');
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const SYSTEM_PROMPT = `You are a materials design assistant. Given a product idea or problem, suggest sustainable, biodegradable materials. Favor high durability, high moisture resistance for humid conditions, low cost, and high biodegradability. Provide concise justification in 2-3 sentences and list 3-5 materials. Ensure there are no `;
@@ -142,9 +142,9 @@ const ChatbotScreen = () => {
       let modelText = '';
       try {
         const prompt = `User request: \"${text}\"\n\nPlease provide a concise analysis and recommendation based on these top candidates from our materials database:\n\n${recSummary}`;
-        modelText = await generateGeminiSuggestion(prompt, SYSTEM_PROMPT);
+        modelText = await generateOpenAISuggestion(prompt, SYSTEM_PROMPT);
       } catch (e) {
-        console.error('Gemini API error:', e);
+        console.error('OpenAI API error:', e);
         modelText = 'AI analysis is temporarily unavailable. Here are the dataset-based recommendations:';
       }
 

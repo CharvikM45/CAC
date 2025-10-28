@@ -14,7 +14,7 @@ import { CameraView, useCameraPermissions } from 'expo-camera';
 import * as ImagePicker from 'expo-image-picker';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '../constants/colors';
-import { generateGeminiImageAnalysis } from '../utils/geminiClient';
+const { generateGeminiSuggestion: generateOpenAISuggestion } = require('../utils/geminiClient');
 // import MaterialCard from '../components/MaterialCard';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
@@ -117,11 +117,10 @@ const ImageDetectionScreen = () => {
 
       const userPrompt = `Please analyze this image and identify the material(s) visible. Provide detailed information about the material properties and suggest sustainable alternatives. Consider the environmental impact and suggest materials that are biodegradable, recyclable, or made from renewable resources.`;
 
-      // Use Gemini's image analysis capabilities
-      const response = await generateGeminiImageAnalysis(
+      // Use OpenAI's text analysis capabilities
+      const response = await generateOpenAISuggestion(
         userPrompt,
-        systemPrompt,
-        base64Image
+        systemPrompt
       );
 
       // Parse the JSON response
@@ -160,7 +159,7 @@ const ImageDetectionScreen = () => {
       if (error.message.includes('API key') || error.message.includes('permission')) {
         Alert.alert(
           'API Key Required', 
-          'Gemini API key is not configured. Using mock analysis for demonstration.',
+          'OpenAI API key is not configured. Using mock analysis for demonstration.',
           [{ text: 'OK' }]
         );
         
@@ -206,7 +205,7 @@ const ImageDetectionScreen = () => {
               ]
             }
           ],
-          analysisNotes: "This is a mock analysis for demonstration purposes. To get real AI analysis, please configure a valid Gemini API key."
+          analysisNotes: "This is a mock analysis for demonstration purposes. To get real AI analysis, please configure a valid OpenAI API key."
         });
       } else {
         Alert.alert('Error', `Failed to analyze image: ${error.message}`);
