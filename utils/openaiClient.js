@@ -1,3 +1,4 @@
+/*
 // OpenAI GPT Client for text and image analysis
 const DEFAULT_MODEL = 'gpt-4o';
 const FALLBACK_MODELS = [
@@ -220,3 +221,4 @@ export default {
   generateGeminiSuggestion,
   generateGeminiImageAnalysis,
 };
+*/
