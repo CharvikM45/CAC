@@ -4,13 +4,14 @@ import { Platform } from 'react-native';
 
 // Get the correct server URL based on platform
 const getServerUrl = () => {
+  // For development, try localhost first, then fallback to IP
   if (Platform.OS === 'web') {
     return 'http://localhost:3001';
   }
-  // For mobile devices, use your computer's IP address
-  // You'll need to replace this with your actual IP address
-  // You can find it by running: ipconfig getifaddr en0 (on Mac) or ipconfig (on Windows)
-  return 'http://192.168.1.10:3001'; // Your actual IP address
+  // Try localhost first for mobile development (if using simulator/emulator)
+  // If that doesn't work, use your computer's IP address
+  return 'http://localhost:3001'; // Try localhost first
+  // return 'http://192.168.1.10:3001'; // Fallback to IP if localhost doesn't work
 };
 
 class SocketService {
@@ -26,6 +27,10 @@ class SocketService {
       console.warn('SocketService: No userId provided for connection');
       return;
     }
+
+    // Temporarily disable WebSocket connections to avoid errors
+    console.log('SocketService: WebSocket connections disabled for now');
+    return;
 
     // If already connected with the same user, don't reconnect
     if (this.socket && this.isConnected && this.currentUserId === userId) {

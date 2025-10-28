@@ -14,6 +14,7 @@ import { Asset } from 'expo-asset';
 import * as FileSystem from 'expo-file-system/legacy';
 import { parseCSVData } from '../utils/dataService';
 import MaterialPickerModal from '../components/MaterialPickerModal';
+import ProfileButton from '../components/ProfileButton';
 import { WebView } from 'react-native-webview';
 
 const CONDITION_OPTIONS = [
@@ -155,7 +156,7 @@ const ChartView = ({ labels, data, color = '#1A73E8' }) => {
   );
 };
 
-const SimulationsScreen = () => {
+const SimulationsScreen = ({ navigation }) => {
   const [loading, setLoading] = useState(true);
   const [csvRows, setCsvRows] = useState([]);
   const [pickerVisible, setPickerVisible] = useState(false);
@@ -231,8 +232,14 @@ const SimulationsScreen = () => {
     <View style={styles.container}>
       {/* App Bar */}
       <View style={styles.appBar}>
-        <Text style={styles.appBarTitle}>Simulations</Text>
-        <Text style={styles.appBarSubtitle}>Visualize material retention under conditions</Text>
+        <View style={styles.appBarLeft}>
+          <Text style={styles.appBarTitle}>Simulations</Text>
+          <Text style={styles.appBarSubtitle}>Visualize material retention under conditions</Text>
+        </View>
+        <ProfileButton 
+          onPress={() => navigation.navigate('Profile')}
+          userData={null}
+        />
       </View>
 
       {loading ? (
@@ -326,12 +333,18 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.background,
   },
   appBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     paddingTop: 56,
     paddingBottom: 12,
-    paddingHorizontal: 16,
+    paddingHorizontal: 24,
     backgroundColor: Colors.surface,
     borderBottomWidth: 1,
     borderBottomColor: Colors.border,
+  },
+  appBarLeft: {
+    flex: 1,
   },
   appBarTitle: {
     color: Colors.text,

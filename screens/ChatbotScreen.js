@@ -12,11 +12,22 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '../constants/colors';
-import { recommendMaterials } from '../utils/recommender';
-import { generateGeminiSuggestion } from '../utils/geminiClient';
+import { generateOpenAISuggestion } from '../utils/openaiClient';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import ProfileButton from '../components/ProfileButton';
 
-const SYSTEM_PROMPT = `You are a materials design assistant. Given a product idea or problem, suggest sustainable, biodegradable materials. Favor high durability, high moisture resistance for humid conditions, low cost, and high biodegradability. Provide concise justification in 2-3 sentences and list 3-5 materials. Ensure there are no `;
+const SYSTEM_PROMPT = `You are an expert materials scientist and sustainability consultant specializing in sustainable materials design. Your role is to provide comprehensive, personalized recommendations for materials based on user needs.
+
+When responding to user requests:
+1. Analyze the specific requirements and constraints mentioned
+2. Consider environmental impact, sustainability, and biodegradability
+3. Evaluate cost-effectiveness and practical applications
+4. Suggest specific materials with detailed properties and characteristics
+5. Provide clear reasoning for your recommendations
+6. Include information about availability, processing methods, and end-of-life considerations
+7. Be specific and actionable in your advice
+
+Always tailor your response to the user's specific needs rather than providing generic information. Focus on practical solutions and real-world applications.`;
 
 // Google Messages-inspired palette (dark mode)
 const ChatPalette = {
@@ -83,7 +94,7 @@ const MessageBubble = ({ role, text, timestamp }) => {
   );
 };
 
-const ChatbotScreen = () => {
+const ChatbotScreen = ({ navigation }) => {
   const insets = useSafeAreaInsets();
   // Clearance to sit input above the floating bottom tab bar (height 75 + bottom offset 25 + extra spacing)
   const TABBAR_CLEARANCE = 75 + 25 + 12;
@@ -126,35 +137,23 @@ const ChatbotScreen = () => {
 
     setLoading(true);
     try {
-      const recs = recommendMaterials(text, 5);
-      const recSummary = recs
-        .map(
-          (r, i) =>
-            `${i + 1}. **${r.name}** (Score: ${(r.score * 100).toFixed(0)}%)\n` +
-            `   • Type: ${r.type}\n` +
-            `   • Cost: $${r.costPerKg}/kg\n` +
-            `   • Biodegradability: ${r.biodegradabilityPct}%\n` +
-            `   • Moisture Resistance: ${r.moistureResistance}/10\n` +
-            `   • Description: ${r.description}`
-        )
-        .join('\n\n');
-
       let modelText = '';
       try {
-        const prompt = `User request: \"${text}\"\n\nPlease provide a concise analysis and recommendation based on these top candidates from our materials database:\n\n${recSummary}`;
-        modelText = await generateGeminiSuggestion(prompt, SYSTEM_PROMPT);
+        // Use OpenAI directly without dataset fallback
+        const prompt = `User request: "${text}"\n\nPlease provide a comprehensive analysis and recommendation for sustainable materials. Focus on:\n- Material properties and characteristics\n- Environmental impact and sustainability\n- Cost considerations\n- Practical applications\n- Biodegradability and recyclability\n\nProvide detailed, specific recommendations based on the user's needs.`;
+        modelText = await generateOpenAISuggestion(prompt, SYSTEM_PROMPT);
       } catch (e) {
-        console.error('Gemini API error:', e);
-        modelText = 'AI analysis is temporarily unavailable. Here are the dataset-based recommendations:';
+        console.error('OpenAI API error:', e);
+        throw new Error(`AI analysis failed: ${e.message}`);
       }
 
-      const finalText = `${modelText}\n\n${recSummary}`;
+      // Only use the model's response, no dataset fallback
       setMessages((prev) => [
         ...prev,
         {
           id: `a-${Date.now()}`,
           role: 'assistant',
-          text: finalText,
+          text: modelText,
           timestamp: formatTimestamp(),
         },
       ]);
@@ -165,7 +164,7 @@ const ChatbotScreen = () => {
         {
           id: `a-${Date.now()}`,
           role: 'assistant',
-          text: 'Sorry, I encountered an error. Please try again.',
+          text: `Sorry, I encountered an error: ${error.message}. Please check your API key configuration and try again.`,
           timestamp: formatTimestamp(),
         },
       ]);
@@ -195,9 +194,10 @@ const ChatbotScreen = () => {
           <TouchableOpacity style={styles.iconBtn}>
             <Ionicons name="search" size={22} color={ChatPalette.icon} />
           </TouchableOpacity>
-          <TouchableOpacity style={styles.iconBtn}>
-            <Ionicons name="ellipsis-vertical" size={20} color={ChatPalette.icon} />
-          </TouchableOpacity>
+          <ProfileButton 
+            onPress={() => navigation.navigate('Profile')}
+            userData={null}
+          />
         </View>
       </View>
 
@@ -311,20 +311,20 @@ const styles = StyleSheet.create({
 
   chatContainer: { flex: 1 },
   listContent: {
-    paddingHorizontal: 12,
-    paddingTop: 8,
-    paddingBottom: 12,
+    paddingHorizontal: 20,
+    paddingTop: 16,
+    paddingBottom: 20,
   },
 
-  row: { flexDirection: 'row', alignItems: 'flex-end', marginVertical: 4 },
+  row: { flexDirection: 'row', alignItems: 'flex-end', marginVertical: 8 },
   userRow: { justifyContent: 'flex-end' },
   assistantRow: { justifyContent: 'flex-start' },
 
   bubble: {
     maxWidth: '82%',
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    borderRadius: 18,
+    paddingHorizontal: 18,
+    paddingVertical: 14,
+    borderRadius: 20,
   },
   userBubble: {
     backgroundColor: ChatPalette.sentBg,
@@ -369,9 +369,9 @@ const styles = StyleSheet.create({
     backgroundColor: ChatPalette.appBarBg,
     borderTopWidth: StyleSheet.hairlineWidth,
     borderTopColor: ChatPalette.border,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    paddingBottom: 10,
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    paddingBottom: 16,
   },
   inputWrapper: {
     flexDirection: 'row',

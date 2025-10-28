@@ -14,12 +14,104 @@ import { CameraView, useCameraPermissions } from 'expo-camera';
 import * as ImagePicker from 'expo-image-picker';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '../constants/colors';
-import { generateGeminiImageAnalysis } from '../utils/geminiClient';
+import { generateOpenAIImageAnalysis } from '../utils/openaiClient';
+import ProfileButton from '../components/ProfileButton';
 // import MaterialCard from '../components/MaterialCard';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
-const ImageDetectionScreen = () => {
+// Helper function to extract material information from text response
+const extractMaterialInfoFromText = (text) => {
+  // Try to identify material name and type from the text
+  const lines = text.split('\n').filter(line => line.trim());
+  
+  let materialName = "Unknown Material";
+  let materialType = "Unknown";
+  let description = text.substring(0, 300) + "...";
+  
+  // Look for common material indicators
+  const materialKeywords = {
+    'plastic': 'Polymer',
+    'metal': 'Metal',
+    'wood': 'Natural Material',
+    'fabric': 'Textile',
+    'glass': 'Ceramic',
+    'ceramic': 'Ceramic',
+    'composite': 'Composite',
+    'rubber': 'Elastomer',
+    'paper': 'Cellulose',
+    'cardboard': 'Cellulose'
+  };
+  
+  // Try to find material name and type
+  for (const line of lines) {
+    const lowerLine = line.toLowerCase();
+    
+    // Look for material type keywords
+    for (const [keyword, type] of Object.entries(materialKeywords)) {
+      if (lowerLine.includes(keyword)) {
+        materialType = type;
+        break;
+      }
+    }
+    
+    // Look for material names (capitalized words that might be material names)
+    const words = line.split(' ');
+    for (const word of words) {
+      if (word.length > 3 && word[0] === word[0].toUpperCase() && 
+          !word.includes('.') && !word.includes(',') && 
+          !['The', 'This', 'That', 'Material', 'Analysis'].includes(word)) {
+        materialName = word;
+        break;
+      }
+    }
+  }
+  
+  return {
+    identifiedMaterial: {
+      name: materialName,
+      type: materialType,
+      description: description,
+      properties: {
+        tensileStrength: "Analysis in progress",
+        compressiveStrength: "Analysis in progress",
+        elasticModulus: "Analysis in progress",
+        density: "Analysis in progress",
+        thermalConductivity: "Analysis in progress",
+        corrosionResistance: "Analysis in progress",
+        formability: "Analysis in progress",
+        cost: "Analysis in progress",
+        biodegradability: "Analysis in progress"
+      }
+    },
+    sustainableAlternatives: [
+      {
+        name: "Biodegradable Alternative",
+        type: "Sustainable Material",
+        description: "Consider using biodegradable or recyclable materials for better environmental impact.",
+        properties: {
+          tensileStrength: "Varies by material",
+          compressiveStrength: "Varies by material",
+          elasticModulus: "Varies by material",
+          density: "Varies by material",
+          thermalConductivity: "Varies by material",
+          corrosionResistance: "Varies by material",
+          formability: "Varies by material",
+          cost: "Varies by material",
+          biodegradability: "80-100%"
+        },
+        sustainabilityBenefits: [
+          "Reduced environmental impact",
+          "Better end-of-life options",
+          "Renewable resource usage"
+        ]
+      }
+    ],
+    analysisNotes: text
+  };
+};
+
+const ImageDetectionScreen = ({ navigation }) => {
   const [permission, requestPermission] = useCameraPermissions();
   const [cameraRef, setCameraRef] = useState(null);
   const [capturedImage, setCapturedImage] = useState(null);
@@ -73,7 +165,9 @@ const ImageDetectionScreen = () => {
       // Create a comprehensive prompt for material identification
       const systemPrompt = `You are an expert materials scientist and sustainability consultant. Your task is to analyze images of materials and provide detailed information about their properties and suggest sustainable alternatives.
 
-      When analyzing an image, provide your response in the following JSON format:
+      CRITICAL: You must respond with ONLY valid JSON. Do not include any explanatory text, markdown formatting, or text before or after the JSON. Your entire response must be a single valid JSON object.
+
+      Respond with this exact JSON structure:
       {
         "identifiedMaterial": {
           "name": "Material name",
@@ -113,12 +207,14 @@ const ImageDetectionScreen = () => {
         "analysisNotes": "Additional insights about the material and recommendations"
       }
 
-      Focus on identifying common materials like plastics, metals, composites, textiles, and suggest biodegradable, recyclable, or renewable alternatives when possible.`;
+      Focus on identifying common materials like plastics, metals, composites, textiles, and suggest biodegradable, recyclable, or renewable alternatives when possible.
+
+      REMEMBER: Respond with ONLY the JSON object. No additional text, explanations, or formatting.`;
 
       const userPrompt = `Please analyze this image and identify the material(s) visible. Provide detailed information about the material properties and suggest sustainable alternatives. Consider the environmental impact and suggest materials that are biodegradable, recyclable, or made from renewable resources.`;
 
-      // Use Gemini's image analysis capabilities
-      const response = await generateGeminiImageAnalysis(
+      // Use OpenAI's image analysis capabilities
+      const response = await generateOpenAIImageAnalysis(
         userPrompt,
         systemPrompt,
         base64Image
@@ -126,30 +222,35 @@ const ImageDetectionScreen = () => {
 
       // Parse the JSON response
       try {
-        const parsedResult = JSON.parse(response);
+        // Extract JSON from the response (handle markdown code blocks)
+        let jsonString = response.trim();
+        
+        // Remove markdown code blocks if present
+        if (jsonString.startsWith('```json')) {
+          jsonString = jsonString.replace(/^```json\s*/, '').replace(/\s*```$/, '');
+        } else if (jsonString.startsWith('```')) {
+          jsonString = jsonString.replace(/^```\s*/, '').replace(/\s*```$/, '');
+        }
+        
+        // Find JSON object boundaries
+        const jsonStart = jsonString.indexOf('{');
+        const jsonEnd = jsonString.lastIndexOf('}') + 1;
+        
+        if (jsonStart !== -1 && jsonEnd > jsonStart) {
+          jsonString = jsonString.substring(jsonStart, jsonEnd);
+        }
+        
+        console.log('Attempting to parse JSON:', jsonString.substring(0, 200) + '...');
+        const parsedResult = JSON.parse(jsonString);
+        console.log('Successfully parsed JSON result');
         setAnalysisResult(parsedResult);
       } catch (parseError) {
-        // If JSON parsing fails, create a structured response from the text
-        setAnalysisResult({
-          identifiedMaterial: {
-            name: "Material Analysis",
-            type: "Unknown",
-            description: response.substring(0, 200) + "...",
-            properties: {
-              tensileStrength: "N/A",
-              compressiveStrength: "N/A",
-              elasticModulus: "N/A",
-              density: "N/A",
-              thermalConductivity: "N/A",
-              corrosionResistance: "N/A",
-              formability: "N/A",
-              cost: "N/A",
-              biodegradability: "N/A"
-            }
-          },
-          sustainableAlternatives: [],
-          analysisNotes: response
-        });
+        console.error('JSON parsing failed:', parseError.message);
+        console.log('Raw response:', response);
+        
+        // Try to extract meaningful information from the text response
+        const extractedInfo = extractMaterialInfoFromText(response);
+        setAnalysisResult(extractedInfo);
       }
     } catch (error) {
       console.error('Analysis error:', error);
@@ -157,10 +258,10 @@ const ImageDetectionScreen = () => {
       console.error('Error stack:', error.stack);
       
       // If it's an API key error, provide a helpful message and mock analysis
-      if (error.message.includes('API key') || error.message.includes('permission')) {
+      if (error.message.includes('API key') || error.message.includes('not configured')) {
         Alert.alert(
           'API Key Required', 
-          'Gemini API key is not configured. Using mock analysis for demonstration.',
+          'OpenAI API key is not configured. Using mock analysis for demonstration.',
           [{ text: 'OK' }]
         );
         
@@ -206,7 +307,7 @@ const ImageDetectionScreen = () => {
               ]
             }
           ],
-          analysisNotes: "This is a mock analysis for demonstration purposes. To get real AI analysis, please configure a valid Gemini API key."
+          analysisNotes: "This is a mock analysis for demonstration purposes. To get real AI analysis, please configure a valid OpenAI API key."
         });
       } else {
         Alert.alert('Error', `Failed to analyze image: ${error.message}`);
@@ -344,8 +445,14 @@ const ImageDetectionScreen = () => {
         <ScrollView style={styles.content}>
         {/* App Bar */}
         <View style={styles.appBar}>
-          <Text style={styles.appBarTitle}>Material Detection</Text>
-          <Text style={styles.appBarSubtitle}>Identify materials and discover sustainable alternatives</Text>
+          <View style={styles.appBarLeft}>
+            <Text style={styles.appBarTitle}>Material Detection</Text>
+            <Text style={styles.appBarSubtitle}>Identify materials and discover sustainable alternatives</Text>
+          </View>
+          <ProfileButton 
+            onPress={() => navigation.navigate('Profile')}
+            userData={null}
+          />
         </View>
 
           {capturedImage ? (
@@ -392,15 +499,22 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    padding: 20,
+    paddingHorizontal: 24,
+    paddingVertical: 20,
   },
   appBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     paddingTop: 56,
     paddingBottom: 12,
-    paddingHorizontal: 16,
+    paddingHorizontal: 24,
     backgroundColor: Colors.surface,
     borderBottomWidth: 1,
     borderBottomColor: Colors.border,
+  },
+  appBarLeft: {
+    flex: 1,
   },
   appBarTitle: {
     color: Colors.text,
@@ -431,15 +545,24 @@ const styles = StyleSheet.create({
   actionButtons: {
     flexDirection: 'row',
     justifyContent: 'space-around',
-    marginBottom: 30,
+    marginBottom: 40,
+    paddingHorizontal: 8,
   },
   actionButton: {
     backgroundColor: Colors.primary,
-    paddingVertical: 20,
-    paddingHorizontal: 30,
-    borderRadius: 15,
+    paddingVertical: 24,
+    paddingHorizontal: 32,
+    borderRadius: 16,
     alignItems: 'center',
-    minWidth: 140,
+    minWidth: 150,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.2,
+    shadowRadius: 6,
+    elevation: 4,
   },
   galleryButton: {
     backgroundColor: Colors.secondary,
@@ -499,9 +622,10 @@ const styles = StyleSheet.create({
     position: 'relative',
   },
   capturedImage: {
-    width: screenWidth - 40,
-    height: 250,
-    borderRadius: 15,
+    width: screenWidth - 48,
+    height: 280,
+    borderRadius: 16,
+    marginBottom: 8,
   },
   analyzingOverlay: {
     position: 'absolute',
@@ -550,27 +674,36 @@ const styles = StyleSheet.create({
     marginLeft: 5,
   },
   materialSection: {
-    marginBottom: 25,
+    marginBottom: 32,
   },
   alternativesSection: {
-    marginBottom: 25,
+    marginBottom: 32,
   },
   notesSection: {
-    marginBottom: 25,
+    marginBottom: 32,
   },
   sectionTitle: {
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: 'bold',
     color: Colors.text,
-    marginBottom: 15,
+    marginBottom: 20,
+    marginTop: 8,
   },
   alternativeCard: {
     backgroundColor: Colors.surface,
-    padding: 15,
-    borderRadius: 12,
-    marginBottom: 15,
+    padding: 20,
+    borderRadius: 16,
+    marginBottom: 20,
     borderWidth: 1,
     borderColor: Colors.border,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   alternativeName: {
     fontSize: 18,
@@ -641,11 +774,19 @@ const styles = StyleSheet.create({
   },
   materialCard: {
     backgroundColor: Colors.surface,
-    padding: 15,
-    borderRadius: 12,
-    marginBottom: 15,
+    padding: 20,
+    borderRadius: 16,
+    marginBottom: 20,
     borderWidth: 1,
     borderColor: Colors.border,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   materialName: {
     fontSize: 18,
