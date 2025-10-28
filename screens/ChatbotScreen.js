@@ -16,7 +16,7 @@ import { recommendMaterials } from '../utils/recommender';
 import { generateGeminiSuggestion } from '../utils/geminiClient';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
-const SYSTEM_PROMPT = `You are a materials design assistant. Given a product idea or problem, suggest sustainable, biodegradable materials. Favor high durability, high moisture resistance for humid conditions, low cost, and high biodegradability. Provide concise justification in 2-3 sentences and list 3-5 materials.`;
+const SYSTEM_PROMPT = `You are a materials design assistant. Given a product idea or problem, suggest sustainable, biodegradable materials. Favor high durability, high moisture resistance for humid conditions, low cost, and high biodegradability. Provide concise justification in 2-3 sentences and list 3-5 materials. Ensure there are no `;
 
 // Google Messages-inspired palette (dark mode)
 const ChatPalette = {
