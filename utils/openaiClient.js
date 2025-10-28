@@ -7,7 +7,7 @@ const FALLBACK_MODELS = [
 ];
 
 // NOTE: Replace this with your OpenAI API key
-const DEFAULT_API_KEY = 'REPLACE KEY CHARVIK';
+"const DEFAULT_API_KEY = 'REPLACE KEY CHARVIK';"
 
 export const getEffectiveOpenAIApiKey = async () => DEFAULT_API_KEY;
 
