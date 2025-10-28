@@ -10,9 +10,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '../constants/colors';
-import { Asset } from 'expo-asset';
-import * as FileSystem from 'expo-file-system/legacy';
-import { parseCSVData } from '../utils/dataService';
+import { materialsDataWithRetention } from '../data/materialsDataWithRetention';
 import MaterialPickerModal from '../components/MaterialPickerModal';
 import ProfileButton from '../components/ProfileButton';
 import { WebView } from 'react-native-webview';
@@ -171,15 +169,11 @@ const SimulationsScreen = ({ navigation }) => {
   const loadCsv = async () => {
     try {
       setLoading(true);
-      const [asset] = await Asset.loadAsync([require('../assets/data/FullDatasheet.csv')]);
-      const uri = asset.localUri || asset.uri;
-      const text = uri && uri.startsWith('http')
-        ? await (await fetch(uri)).text()
-        : await FileSystem.readAsStringAsync(uri, { encoding: 'utf8' });
-      const rows = parseCSVData(text);
+      const rows = materialsDataWithRetention;
+      console.log('Loaded', rows.length, 'materials with retention data');
       setCsvRows(rows);
     } catch (e) {
-      console.error('Failed to load CSV:', e);
+      console.error('Failed to load materials:', e);
       setCsvRows([]);
     } finally {
       setLoading(false);
@@ -193,12 +187,17 @@ const SimulationsScreen = ({ navigation }) => {
     '10y': `${condKey}_10y_%Retention`,
   });
 
-  const getRowForMaterial = (name) => csvRows.find(r => (r['Material Name'] || '').toLowerCase() === (name || '').toLowerCase());
+  const getRowForMaterial = (name) => {
+    if (!name || !csvRows.length) return null;
+    return csvRows.find(r => (r['Material Name'] || '').toLowerCase() === (name || '').toLowerCase());
+  };
 
   const computeSeries = useMemo(() => {
     if (!selectedMaterial || !csvRows.length) return { labels: [], data: [] };
     const row = getRowForMaterial(selectedMaterial['Material Name']);
-    if (!row) return { labels: [], data: [] };
+    if (!row) {
+      return { labels: [], data: [] };
+    }
 
     const cols = retentionColumnsFor(condition);
     const points = [
@@ -223,6 +222,7 @@ const SimulationsScreen = ({ navigation }) => {
     const filtered = with1d.filter(p => p.days <= cutoffDays);
     const labels = filtered.map(p => p.t);
     const data = filtered.map(p => Number.isFinite(p.value) ? Math.max(0, Math.min(100, Number(p.value))) : 100);
+    
     return { labels, data };
   }, [selectedMaterial, csvRows, condition, duration]);
 
