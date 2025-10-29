@@ -26,8 +26,7 @@ const LoginScreen = ({ onLogin, onNavigateToRegister }) => {
 
     setLoading(true);
     try {
-      // Use default password for testing
-      const user = await authService.login(email.trim(), 'default123');
+      const user = await authService.loginWithEmail(email.trim());
       onLogin(user);
     } catch (error) {
       Alert.alert('Login Failed', error.message);

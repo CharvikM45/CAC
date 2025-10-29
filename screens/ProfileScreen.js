@@ -484,7 +484,8 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.surface,
     borderRadius: 20,
     padding: 24,
-    marginBottom: 24,
+    marginBottom: 20, // unified vertical spacing between cards
+    // removed marginHorizontal so side spacing is controlled by parent padding
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
@@ -526,6 +527,8 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.surface,
     borderRadius: 20,
     padding: 24,
+    marginBottom: 20, // match section spacing so cards are equidistant
+    // removed marginHorizontal for consistent side padding
     shadowColor: '#000',
     shadowOffset: {
       width: 0,

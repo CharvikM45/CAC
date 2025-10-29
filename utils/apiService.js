@@ -89,7 +89,7 @@ class ApiService {
 
   async getLocalUsers() {
     try {
-      const usersData = await AsyncStorage.getItem('mataid_users');
+      const usersData = await AsyncStorage.getItem('releaf_users');
       if (usersData) {
         const users = JSON.parse(usersData);
         return Object.values(users).map(user => ({

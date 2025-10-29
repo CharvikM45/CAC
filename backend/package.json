@@ -1,7 +1,7 @@
 {
-  "name": "mataid-backend",
+  "name": "releaf-backend",
   "version": "1.0.0",
-  "description": "MatAid backend server with real-time chat",
+  "description": "Releaf backend server with real-time chat",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
@@ -16,6 +16,6 @@
     "nodemon": "^3.0.1"
   },
   "keywords": ["materials", "chat", "real-time"],
-  "author": "MatAid Team",
+  "author": "Releaf Team",
   "license": "MIT"
 }

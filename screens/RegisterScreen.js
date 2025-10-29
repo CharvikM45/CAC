@@ -69,7 +69,7 @@ const RegisterScreen = ({ onRegister, onNavigateToLogin }) => {
           <View style={styles.logoContainer}>
             <Ionicons name="flask" size={60} color={Colors.primary} />
           </View>
-          <Text style={styles.title}>Join MatAid</Text>
+          <Text style={styles.title}>Join Releaf</Text>
           <Text style={styles.subtitle}>
             Create your account to start exploring materials
           </Text>

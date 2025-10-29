@@ -76,17 +76,6 @@ const InnovationsModal = ({ visible, onClose, innovation }) => {
               </View>
             ) : null}
 
-            {innovation.links && innovation.links.length > 0 ? (
-              <View style={styles.section}>
-                <Text style={styles.sectionTitle}>Learn More</Text>
-                {innovation.links.map((link, idx) => (
-                  <TouchableOpacity key={idx} onPress={() => handleOpenLink(link.url)} style={styles.linkRow}>
-                    <Ionicons name="link" size={16} color={Colors.primary} />
-                    <Text style={styles.linkText}>{link.label || link.url}</Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
-            ) : null}
           </ScrollView>
 
           <View style={styles.footer}>
@@ -110,7 +99,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.surface,
     borderTopLeftRadius: 18,
     borderTopRightRadius: 18,
-    maxHeight: '88%',
+    maxHeight: '85%',
     borderWidth: 1,
     borderColor: Colors.border,
   },
@@ -186,14 +175,21 @@ const styles = StyleSheet.create({
   infoRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 6,
+    alignItems: 'center',
+    marginBottom: 8,
+    paddingVertical: 4,
   },
   infoLabel: {
     color: Colors.textSecondary,
+    fontSize: 14,
+    flex: 1,
   },
   infoValue: {
     color: Colors.text,
     fontWeight: '600',
+    fontSize: 14,
+    textAlign: 'right',
+    flex: 1,
   },
   notes: {
     color: Colors.text,
@@ -219,6 +215,7 @@ const styles = StyleSheet.create({
   },
   footer: {
     padding: 16,
+    paddingBottom: 24,
     borderTopWidth: 1,
     borderTopColor: Colors.border,
   },

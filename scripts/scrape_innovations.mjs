@@ -57,7 +57,7 @@ const scrapeSource = async (source) => {
   // NOTE: This is a placeholder; replace with real fetch/parse logic for your sources
   // Using minimal structure to avoid tight coupling to any one site.
   try {
-    const res = await fetch(source.url, { headers: { 'User-Agent': 'MatAidScraper/1.0' } });
+    const res = await fetch(source.url, { headers: { 'User-Agent': 'ReleafScraper/1.0' } });
     const html = await res.text();
     // Very naive extraction; you should replace with specific selectors for your sources
     const maybeTitles = Array.from(html.matchAll(/<h[12][^>]*>(.*?)<\/h[12]>/gi)).map(m => m[1].replace(/<[^>]*>/g, '').trim()).filter(Boolean);

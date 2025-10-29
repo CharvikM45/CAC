@@ -623,7 +623,7 @@ const styles = StyleSheet.create({
   appBarRight: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    gap: 8,
   },
   favoritesButton: {
     width: 40,
@@ -650,7 +650,6 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.card,
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 10,
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
@@ -675,6 +674,7 @@ const styles = StyleSheet.create({
   searchContainer: {
     flexDirection: 'row',
     paddingHorizontal: 24,
+    marginTop: 20,
     marginBottom: 20,
   },
   searchInput: {

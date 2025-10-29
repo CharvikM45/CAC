@@ -3,8 +3,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 // Simple authentication service (for demo purposes - in production, use a proper backend)
 class AuthService {
   constructor() {
-    this.usersKey = 'mataid_users';
-    this.currentUserKey = 'mataid_current_user';
+    this.usersKey = 'releaf_users';
+    this.currentUserKey = 'releaf_current_user';
   }
 
   // Generate a simple user ID
@@ -15,7 +15,7 @@ class AuthService {
   // Hash password (simple implementation - use proper hashing in production)
   hashPassword(password) {
     // In production, use bcrypt or similar
-    return btoa(password + 'mataid_salt');
+    return btoa(password + 'releaf_salt');
   }
 
   // Get all users from storage
@@ -96,7 +96,32 @@ class AuthService {
     }
   }
 
-  // Login user
+  // Login user with email only
+  async loginWithEmail(email) {
+    try {
+      const users = await this.getAllUsers();
+      const user = users[email.toLowerCase()];
+      
+      if (!user) {
+        throw new Error('No account found with this email');
+      }
+
+      // Update last login
+      user.lastLogin = new Date().toISOString();
+      users[email.toLowerCase()] = user;
+      await this.saveUsers(users);
+
+      // Set as current user
+      await this.setCurrentUser(user);
+      
+      return user;
+    } catch (error) {
+      console.error('Login error:', error);
+      throw error;
+    }
+  }
+
+  // Login user with password (kept for backward compatibility)
   async login(email, password) {
     try {
       const users = await this.getAllUsers();

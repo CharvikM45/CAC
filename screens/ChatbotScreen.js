@@ -29,7 +29,7 @@ When responding to user requests:
 
 Always tailor your response to the user's specific needs rather than providing generic information. Focus on practical solutions and real-world applications.`;
 
-// Google Messages-inspired palette (dark mode)
+// Matches your app palette
 const ChatPalette = {
   bg: Colors.background,
   appBarBg: Colors.surface,
@@ -44,6 +44,9 @@ const ChatPalette = {
   placeholder: Colors.textSecondary,
   icon: Colors.textSecondary,
 };
+
+// Same bottom clearance other screens use
+const TABBAR_CLEARANCE = 100;
 
 const Avatar = ({ label = 'AI' }) => (
   <View style={styles.avatar}>
@@ -96,8 +99,6 @@ const MessageBubble = ({ role, text, timestamp }) => {
 
 const ChatbotScreen = ({ navigation }) => {
   const insets = useSafeAreaInsets();
-  // Clearance to sit input above the floating bottom tab bar (height 75 + bottom offset 25 + extra spacing)
-  const TABBAR_CLEARANCE = 75 + 25 + 12;
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState([
     {
@@ -112,7 +113,6 @@ const ChatbotScreen = ({ navigation }) => {
   const listRef = useRef(null);
 
   const canSend = useMemo(() => !!input.trim() && !loading, [input, loading]);
-
 
   useEffect(() => {
     if (listRef.current) {
@@ -137,17 +137,9 @@ const ChatbotScreen = ({ navigation }) => {
 
     setLoading(true);
     try {
-      let modelText = '';
-      try {
-        // Use OpenAI directly without dataset fallback
-        const prompt = `User request: "${text}"\n\nPlease provide a comprehensive analysis and recommendation for sustainable materials. Focus on:\n- Material properties and characteristics\n- Environmental impact and sustainability\n- Cost considerations\n- Practical applications\n- Biodegradability and recyclability\n\nProvide detailed, specific recommendations based on the user's needs.`;
-        modelText = await generateOpenAISuggestion(prompt, SYSTEM_PROMPT);
-      } catch (e) {
-        console.error('OpenAI API error:', e);
-        throw new Error(`AI analysis failed: ${e.message}`);
-      }
+      const prompt = `User request: "${text}"\n\nPlease provide a comprehensive analysis and recommendation for sustainable materials. Focus on:\n- Material properties and characteristics\n- Environmental impact and sustainability\n- Cost considerations\n- Practical applications\n- Biodegradability and recyclability\n\nProvide detailed, specific recommendations based on the user's needs.`;
+      const modelText = await generateOpenAISuggestion(prompt, SYSTEM_PROMPT);
 
-      // Only use the model's response, no dataset fallback
       setMessages((prev) => [
         ...prev,
         {
@@ -178,26 +170,20 @@ const ChatbotScreen = ({ navigation }) => {
   );
 
   return (
-    <SafeAreaView style={[styles.container, { paddingBottom: (insets?.bottom || 0) + TABBAR_CLEARANCE }]} edges={["top", "bottom"]}>
+    <View style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor={ChatPalette.appBarBg} />
 
-      {/* App Bar */}
+      {/* App Bar — exactly like HomeScreen */}
       <View style={styles.appBar}>
         <View style={styles.appBarLeft}>
-          <Avatar />
-          <View>
-            <Text style={styles.appBarTitle}>Materials Assistant</Text>
-            <Text style={styles.appBarSubtitle}>Active now</Text>
-          </View>
+          <Text style={styles.appBarTitle}>Materials Assistant</Text>
+          <Text style={styles.appBarSubtitle}>Active now</Text>
         </View>
-        <View style={styles.appBarActions}>
+        <View style={styles.appBarRight}>
           <TouchableOpacity style={styles.iconBtn}>
             <Ionicons name="search" size={22} color={ChatPalette.icon} />
           </TouchableOpacity>
-          <ProfileButton 
-            onPress={() => navigation.navigate('Profile')}
-            userData={null}
-          />
+          <ProfileButton onPress={() => navigation.navigate('Profile')} userData={null} />
         </View>
       </View>
 
@@ -206,19 +192,20 @@ const ChatbotScreen = ({ navigation }) => {
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
       >
+        {/* Messages */}
         <FlatList
           ref={listRef}
           data={messages}
           keyExtractor={(item) => item.id}
           renderItem={renderItem}
-          contentContainerStyle={[styles.listContent, { paddingBottom: 20 }]}
+          contentContainerStyle={[styles.listContent, { paddingBottom: 250 }]}
           showsVerticalScrollIndicator={false}
         />
 
         {loading && <TypingBubble />}
 
         {/* Input bar */}
-        <View style={[styles.inputContainer, { paddingBottom: (insets?.bottom || 0) }]}>
+        <View style={[styles.inputContainer, { paddingBottom: insets.bottom + 16 }]}>
           <View style={styles.inputWrapper}>
             <TouchableOpacity style={styles.leftIconBtn}>
               <Ionicons name="attach-outline" size={22} color={ChatPalette.icon} />
@@ -251,7 +238,7 @@ const ChatbotScreen = ({ navigation }) => {
           </View>
         </View>
       </KeyboardAvoidingView>
-    </SafeAreaView>
+    </View>
   );
 };
 
@@ -260,41 +247,46 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: ChatPalette.bg,
   },
-  // App Bar
+  chatContainer: {
+    flex: 1,
+  },
   appBar: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingTop: 56,
+    paddingBottom: 12,
+    paddingHorizontal: 24,
     backgroundColor: ChatPalette.appBarBg,
-    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomWidth: 1,
     borderBottomColor: ChatPalette.border,
   },
   appBarLeft: {
+    flex: 1,
+  },
+  appBarRight: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    gap: 8,
   },
   appBarTitle: {
     color: ChatPalette.appBarText,
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: '700',
   },
   appBarSubtitle: {
     color: ChatPalette.appBarSecondary,
     fontSize: 12,
-    marginTop: 2,
+    marginTop: 4,
   },
-  appBarActions: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
+  iconBtn: { padding: 8, borderRadius: 20 },
+  listContent: {
+    paddingHorizontal: 24,
+    paddingTop: 16,
+    paddingBottom: 20,
   },
-  iconBtn: {
-    padding: 8,
-    borderRadius: 20,
-  },
+
+  // Bubbles
   avatar: {
     width: 36,
     height: 36,
@@ -304,17 +296,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginRight: 8,
   },
-  avatarText: {
-    color: '#8AB4F8',
-    fontWeight: '700',
-  },
-
-  chatContainer: { flex: 1 },
-  listContent: {
-    paddingHorizontal: 20,
-    paddingTop: 16,
-    paddingBottom: 20,
-  },
+  avatarText: { color: '#8AB4F8', fontWeight: '700' },
 
   row: { flexDirection: 'row', alignItems: 'flex-end', marginVertical: 8 },
   userRow: { justifyContent: 'flex-end' },
@@ -346,10 +328,7 @@ const styles = StyleSheet.create({
     shadowRadius: 2,
     elevation: 1,
   },
-  bubbleText: {
-    fontSize: 15,
-    lineHeight: 21,
-  },
+  bubbleText: { fontSize: 15, lineHeight: 21 },
   userText: { color: ChatPalette.sentText },
   assistantText: { color: ChatPalette.recvText },
 
@@ -361,21 +340,6 @@ const styles = StyleSheet.create({
   },
   userTimestamp: { textAlign: 'right' },
   assistantTimestamp: { textAlign: 'left' },
-
-  typingDots: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-  dot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: '#9AA0A6',
-    opacity: 0.9,
-  },
-  dot2: { opacity: 0.7 },
-  dot3: { opacity: 0.5 },
 
   inputContainer: {
     backgroundColor: ChatPalette.appBarBg,
@@ -419,9 +383,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginLeft: 4,
   },
-  micBtn: {
-    backgroundColor: 'transparent',
-  },
+  micBtn: { backgroundColor: 'transparent' },
+
+  // Typing indicator
+  typingDots: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  dot: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#9AA0A6', opacity: 0.9 },
+  dot2: { opacity: 0.7 },
+  dot3: { opacity: 0.5 },
 });
 
 export default ChatbotScreen;
