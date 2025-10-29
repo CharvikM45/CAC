@@ -510,7 +510,7 @@ const styles = StyleSheet.create({
     paddingBottom: 12,
     paddingHorizontal: 24,
     backgroundColor: Colors.surface,
-    borderBottomWidth: 1,
+    borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: Colors.border,
   },
   appBarLeft: {
@@ -626,6 +626,13 @@ const styles = StyleSheet.create({
     height: 280,
     borderRadius: 16,
     marginBottom: 8,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: Colors.border,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 6,
+    elevation: 2,
   },
   analyzingOverlay: {
     position: 'absolute',
@@ -694,7 +701,7 @@ const styles = StyleSheet.create({
     padding: 20,
     borderRadius: 16,
     marginBottom: 20,
-    borderWidth: 1,
+    borderWidth: StyleSheet.hairlineWidth,
     borderColor: Colors.border,
     shadowColor: '#000',
     shadowOffset: {
@@ -744,7 +751,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.surface,
     padding: 15,
     borderRadius: 12,
-    borderWidth: 1,
+    borderWidth: StyleSheet.hairlineWidth,
     borderColor: Colors.border,
   },
   loadingText: {
@@ -777,7 +784,7 @@ const styles = StyleSheet.create({
     padding: 20,
     borderRadius: 16,
     marginBottom: 20,
-    borderWidth: 1,
+    borderWidth: StyleSheet.hairlineWidth,
     borderColor: Colors.border,
     shadowColor: '#000',
     shadowOffset: {
