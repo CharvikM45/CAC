@@ -3,12 +3,12 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 // CSV data parsing utility
 export const parseCSVData = (csvText) => {
   const lines = csvText.split('\n');
-  const headers = lines[0].split(',');
+  const headers = parseCSVLine(lines[0]);
   const data = [];
 
   for (let i = 1; i < lines.length; i++) {
     if (lines[i].trim()) {
-      const values = lines[i].split(',');
+      const values = parseCSVLine(lines[i]);
       const row = {};
       headers.forEach((header, index) => {
         row[header.trim()] = values[index]?.trim() || '';
@@ -17,6 +17,29 @@ export const parseCSVData = (csvText) => {
     }
   }
   return data;
+};
+
+// Helper function to parse CSV line handling quoted fields
+const parseCSVLine = (line) => {
+  const result = [];
+  let current = '';
+  let inQuotes = false;
+  
+  for (let i = 0; i < line.length; i++) {
+    const char = line[i];
+    
+    if (char === '"') {
+      inQuotes = !inQuotes;
+    } else if (char === ',' && !inQuotes) {
+      result.push(current);
+      current = '';
+    } else {
+      current += char;
+    }
+  }
+  
+  result.push(current);
+  return result;
 };
 
 // User data management

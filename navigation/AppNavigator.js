@@ -4,13 +4,10 @@ import { View, Text, StyleSheet, Dimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '../constants/colors';
 import HomeScreen from '../screens/HomeScreen';
-import FavoritesScreen from '../screens/FavoritesScreen';
-import ProfileScreen from '../screens/ProfileScreen';
-import ConversationsScreen from '../screens/ConversationsScreen';
 import SimulationsScreen from '../screens/SimulationsScreen';
 import ChatbotScreen from '../screens/ChatbotScreen';
 import ImageDetectionScreen from '../screens/ImageDetectionScreen';
-import AdminUsersScreen from '../screens/AdminUsersScreen';
+import ProfileScreen from '../screens/ProfileScreen';
 
 const Tab = createBottomTabNavigator();
 const { width: screenWidth } = Dimensions.get('window');
@@ -70,7 +67,7 @@ const AppNavigator = ({ userData, onUserUpdate, onLogout }) => {
             tabBarLabel: 'Explore',
           }}
         >
-          {(props) => <HomeScreen {...props} userData={userData} />}
+          {(props) => <HomeScreen {...props} userData={userData} navigation={props.navigation} />}
         </Tab.Screen>
         
         <Tab.Screen
@@ -116,64 +113,6 @@ const AppNavigator = ({ userData, onUserUpdate, onLogout }) => {
             tabBarLabel: 'Chatbot',
           }}
           component={ChatbotScreen}
-        />
-
-        <Tab.Screen
-          name="Favorites"
-          options={{
-            tabBarIcon: ({ focused, color, size }) => (
-              <Ionicons 
-                name={focused ? 'star' : 'star-outline'} 
-                size={size || 24} 
-                color={color} 
-              />
-            ),
-            tabBarLabel: 'Favorites',
-          }}
-          component={FavoritesScreen}
-        />
-
-        <Tab.Screen
-          name="Messages"
-          options={{
-            tabBarIcon: ({ focused, color, size }) => (
-              <Ionicons 
-                name={focused ? 'chatbubbles' : 'chatbubbles-outline'} 
-                size={size || 24} 
-                color={color} 
-              />
-            ),
-            tabBarLabel: 'Messages',
-          }}
-        >
-          {(props) => (
-            <ConversationsScreen 
-              {...props} 
-              currentUserId={userData.id}
-              onOpenChat={(conversation) => {
-                props.navigation.navigate('Chat', {
-                  conversationId: conversation.id,
-                  otherUser: conversation.user,
-                  currentUserId: userData.id,
-                });
-              }}
-            />
-          )}
-        </Tab.Screen>
-
-        <Tab.Screen
-          name="Admin"
-          options={{
-            tabBarIcon: ({ focused, color, size }) => (
-              <Ionicons 
-                name={focused ? 'settings' : 'settings-outline'} 
-                size={size || 24} 
-                color={color} 
-              />
-            ),
-            tabBarLabel: 'Admin',
-          }}
-          component={AdminUsersScreen}
         />
 
         <Tab.Screen

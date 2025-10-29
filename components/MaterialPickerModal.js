@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '../constants/colors';
-import { materialsData } from '../data/materialsData';
+import { materialsDataWithRetention } from '../data/materialsDataWithRetention';
 
 const MaterialPickerModal = ({ visible, onClose, onSelectMaterial }) => {
   const [materials, setMaterials] = useState([]);
@@ -30,9 +30,11 @@ const MaterialPickerModal = ({ visible, onClose, onSelectMaterial }) => {
   const loadMaterials = async () => {
     try {
       setLoading(true);
-      setMaterials(materialsData);
+      const rows = materialsDataWithRetention;
+      console.log('MaterialPickerModal: Loaded', rows.length, 'materials with retention data');
+      setMaterials(rows);
     } catch (error) {
-      console.error('Error loading materials:', error);
+      console.error('MaterialPickerModal: Error loading materials:', error);
     } finally {
       setLoading(false);
     }
@@ -46,14 +48,16 @@ const MaterialPickerModal = ({ visible, onClose, onSelectMaterial }) => {
 
     const query = searchQuery.toLowerCase();
     const filtered = materials.filter(material =>
-      material['Material Name'].toLowerCase().includes(query) ||
-      material['Material Type'].toLowerCase().includes(query) ||
-      material.Description.toLowerCase().includes(query)
+      (material['Material Name'] || '').toLowerCase().includes(query) ||
+      (material['Material Type'] || '').toLowerCase().includes(query) ||
+      (material.Description || '').toLowerCase().includes(query)
     );
     setFilteredMaterials(filtered);
   };
 
   const handleSelectMaterial = (material) => {
+    console.log('MaterialPickerModal: Selected material:', material['Material Name']);
+    console.log('MaterialPickerModal: Has retention data:', Object.keys(material).some(k => k.includes('Retention')));
     onSelectMaterial(material);
     onClose();
   };
@@ -78,7 +82,7 @@ const MaterialPickerModal = ({ visible, onClose, onSelectMaterial }) => {
     <Modal
       visible={visible}
       animationType="slide"
-      presentationStyle="pageSheet"
+      presentationStyle="fullScreen"
       onRequestClose={onClose}
     >
       <View style={styles.container}>
@@ -100,6 +104,7 @@ const MaterialPickerModal = ({ visible, onClose, onSelectMaterial }) => {
             onChangeText={setSearchQuery}
           />
         </View>
+        
 
         {loading ? (
           <View style={styles.loadingContainer}>
@@ -112,7 +117,7 @@ const MaterialPickerModal = ({ visible, onClose, onSelectMaterial }) => {
             keyExtractor={(item) => item['Material Name']}
             renderItem={renderMaterialItem}
             style={styles.materialsList}
-            showsVerticalScrollIndicator={false}
+            showsVerticalScrollIndicator={true}
             ListEmptyComponent={
               <View style={styles.emptyContainer}>
                 <Ionicons name="search-outline" size={48} color={Colors.textSecondary} />

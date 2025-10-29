@@ -15,6 +15,7 @@ import { Colors } from '../constants/colors';
 import InstitutionAutocomplete from '../components/InstitutionAutocomplete';
 import UserSearch from '../components/UserSearch';
 import ConnectionsScreen from './ConnectionsScreen';
+import ConversationsScreen from './ConversationsScreen';
 import authService from '../utils/authService';
 import socketService from '../utils/socketService';
 
@@ -24,6 +25,7 @@ const ProfileScreen = ({ userData, onUserUpdate, onLogout, navigation }) => {
   const [refreshing, setRefreshing] = useState(false);
   const [showUserSearch, setShowUserSearch] = useState(false);
   const [showConnections, setShowConnections] = useState(false);
+  const [showMessages, setShowMessages] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     institution: '',
@@ -275,6 +277,14 @@ const ProfileScreen = ({ userData, onUserUpdate, onLogout, navigation }) => {
             <Ionicons name="people" size={20} color={Colors.primary} />
             <Text style={styles.connectionsButtonText}>My Connections</Text>
           </TouchableOpacity>
+
+          <TouchableOpacity 
+            style={[styles.button, styles.messagesButton]} 
+            onPress={() => setShowMessages(true)}
+          >
+            <Ionicons name="chatbubbles" size={20} color={Colors.primary} />
+            <Text style={styles.messagesButtonText}>Messages</Text>
+          </TouchableOpacity>
         </View>
 
         <View style={styles.actionsSection}>
@@ -382,6 +392,38 @@ const ProfileScreen = ({ userData, onUserUpdate, onLogout, navigation }) => {
           />
         </View>
       </Modal>
+
+      {/* Messages Modal */}
+      <Modal
+        visible={showMessages}
+        animationType="slide"
+        presentationStyle="pageSheet"
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalHeader}>
+            <TouchableOpacity
+              style={styles.modalCloseButton}
+              onPress={() => setShowMessages(false)}
+            >
+              <Ionicons name="close" size={24} color={Colors.text} />
+            </TouchableOpacity>
+            <Text style={styles.modalTitle}>Messages</Text>
+          </View>
+          <ConversationsScreen 
+            currentUserId={userData.id}
+            onOpenChat={(conversation) => {
+              setShowMessages(false);
+              if (navigation) {
+                navigation.navigate('Chat', {
+                  conversationId: conversation.id,
+                  otherUser: conversation.user,
+                  currentUserId: userData.id,
+                });
+              }
+            }}
+          />
+        </View>
+      </Modal>
     </ScrollView>
   );
 };
@@ -434,15 +476,23 @@ const styles = StyleSheet.create({
     color: Colors.textSecondary,
   },
   content: {
-    paddingTop: 20,
-    paddingHorizontal: 20,
+    paddingTop: 24,
+    paddingHorizontal: 24,
     paddingBottom: 100,
   },
   section: {
     backgroundColor: Colors.surface,
-    borderRadius: 16,
-    padding: 20,
-    marginBottom: 20,
+    borderRadius: 20,
+    padding: 24,
+    marginBottom: 24,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   sectionTitle: {
     fontSize: 18,
@@ -474,8 +524,16 @@ const styles = StyleSheet.create({
   },
   actionsSection: {
     backgroundColor: Colors.surface,
-    borderRadius: 16,
-    padding: 20,
+    borderRadius: 20,
+    padding: 24,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   editActions: {
     flexDirection: 'row',
@@ -562,6 +620,17 @@ const styles = StyleSheet.create({
     borderColor: Colors.primary,
   },
   connectionsButtonText: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: Colors.primary,
+    marginLeft: 8,
+  },
+  messagesButton: {
+    backgroundColor: Colors.card,
+    borderWidth: 1,
+    borderColor: Colors.primary,
+  },
+  messagesButtonText: {
     fontSize: 16,
     fontWeight: '500',
     color: Colors.primary,

@@ -10,6 +10,7 @@ import {
   ActivityIndicator,
   ScrollView,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { addToFavorites, removeFromFavorites, getFavorites } from '../utils/dataService';
 import { materialsData } from '../data/materialsData';
 import { Colors } from '../constants/colors';
@@ -19,9 +20,13 @@ import CompareModal from '../components/CompareModal';
 import DropdownFilter from '../components/DropdownFilter';
 import RangeDropdown from '../components/RangeDropdown';
 import ConnectionSelectorModal from '../components/ConnectionSelectorModal';
+import ProfileButton from '../components/ProfileButton';
+import FavoritesModal from '../components/FavoritesModal';
+import InnovationsModal from '../components/InnovationsModal';
+import { getInnovationOfTheDay } from '../data/innovations';
 import socketService from '../utils/socketService';
 
-const HomeScreen = ({ userData }) => {
+const HomeScreen = ({ userData, navigation }) => {
   const [materials, setMaterials] = useState([]);
   const [filteredMaterials, setFilteredMaterials] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -33,6 +38,9 @@ const HomeScreen = ({ userData }) => {
   const [showCompareModal, setShowCompareModal] = useState(false);
   const [showConnectionSelector, setShowConnectionSelector] = useState(false);
   const [materialToShare, setMaterialToShare] = useState(null);
+  const [showFavoritesModal, setShowFavoritesModal] = useState(false);
+  const [showInnovationsModal, setShowInnovationsModal] = useState(false);
+  const [todayInnovation, setTodayInnovation] = useState(null);
   const [filters, setFilters] = useState({
     materialType: '',
     tensileStrength: '',
@@ -56,6 +64,7 @@ const HomeScreen = ({ userData }) => {
   useEffect(() => {
     loadMaterials();
     loadFavorites();
+    setTodayInnovation(getInnovationOfTheDay());
   }, []);
 
   useEffect(() => {
@@ -322,8 +331,28 @@ const HomeScreen = ({ userData }) => {
       >
         {/* App Bar */}
         <View style={styles.appBar}>
-          <Text style={styles.appBarTitle}>Explore</Text>
-          <Text style={styles.appBarSubtitle}>Discover sustainable materials</Text>
+          <View style={styles.appBarLeft}>
+            <Text style={styles.appBarTitle}>Explore</Text>
+            <Text style={styles.appBarSubtitle}>Discover sustainable materials</Text>
+          </View>
+          <View style={styles.appBarRight}>
+            <TouchableOpacity 
+              style={styles.innovationButton}
+              onPress={() => setShowInnovationsModal(true)}
+            >
+              <Ionicons name="sparkles" size={22} color={Colors.primary} />
+            </TouchableOpacity>
+            <TouchableOpacity 
+              style={styles.favoritesButton}
+              onPress={() => setShowFavoritesModal(true)}
+            >
+              <Ionicons name="heart" size={24} color={Colors.primary} />
+            </TouchableOpacity>
+            <ProfileButton 
+              onPress={() => navigation.navigate('Profile')}
+              userData={userData}
+            />
+          </View>
         </View>
 
         <View style={styles.searchContainer}>
@@ -539,6 +568,18 @@ const HomeScreen = ({ userData }) => {
         currentUserId={userData.id}
         material={materialToShare}
       />
+
+      <FavoritesModal
+        visible={showFavoritesModal}
+        onClose={() => setShowFavoritesModal(false)}
+        userData={userData}
+      />
+
+      <InnovationsModal
+        visible={showInnovationsModal}
+        onClose={() => setShowInnovationsModal(false)}
+        innovation={todayInnovation}
+      />
     </View>
   );
 };
@@ -566,12 +607,60 @@ const styles = StyleSheet.create({
     color: Colors.textSecondary,
   },
   appBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     paddingTop: 56,
     paddingBottom: 12,
-    paddingHorizontal: 16,
+    paddingHorizontal: 24,
     backgroundColor: Colors.surface,
     borderBottomWidth: 1,
     borderBottomColor: Colors.border,
+  },
+  appBarLeft: {
+    flex: 1,
+  },
+  appBarRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  favoritesButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: Colors.card,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+    borderWidth: 1,
+    borderColor: Colors.border,
+  },
+  innovationButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: Colors.card,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 10,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+    borderWidth: 1,
+    borderColor: Colors.border,
   },
   appBarTitle: {
     color: Colors.text,
@@ -585,26 +674,42 @@ const styles = StyleSheet.create({
   },
   searchContainer: {
     flexDirection: 'row',
-    paddingHorizontal: 20,
-    marginBottom: 16,
+    paddingHorizontal: 24,
+    marginBottom: 20,
   },
   searchInput: {
     flex: 1,
     backgroundColor: Colors.surface,
-    borderRadius: 12,
-    padding: 16,
+    borderRadius: 16,
+    padding: 18,
     fontSize: 16,
     color: Colors.text,
     borderWidth: 1,
     borderColor: Colors.border,
-    marginRight: 12,
+    marginRight: 16,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
   },
   filterButton: {
     backgroundColor: Colors.primary,
-    borderRadius: 12,
-    paddingHorizontal: 20,
-    paddingVertical: 16,
+    borderRadius: 16,
+    paddingHorizontal: 24,
+    paddingVertical: 18,
     justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 3,
   },
   filterButtonText: {
     fontSize: 16,
@@ -613,10 +718,18 @@ const styles = StyleSheet.create({
   },
   filtersContainer: {
     backgroundColor: Colors.surface,
-    marginHorizontal: 20,
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 16,
+    marginHorizontal: 24,
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 24,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
   },
   filtersTitle: {
     fontSize: 18,
@@ -661,8 +774,8 @@ const styles = StyleSheet.create({
     color: Colors.text,
   },
   resultsContainer: {
-    paddingHorizontal: 20,
-    marginBottom: 16,
+    paddingHorizontal: 24,
+    marginBottom: 20,
   },
   resultsRow: {
     flexDirection: 'row',
@@ -685,7 +798,8 @@ const styles = StyleSheet.create({
     color: Colors.secondary,
   },
   materialsContainer: {
-    paddingHorizontal: 20,
+    paddingHorizontal: 24,
+    paddingBottom: 20,
   },
 });
 
