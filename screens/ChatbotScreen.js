@@ -13,7 +13,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '../constants/colors';
 import { generateOpenAISuggestion } from '../utils/openaiClient';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import ProfileButton from '../components/ProfileButton';
 
 const SYSTEM_PROMPT = `You are an expert materials scientist and sustainability consultant specializing in sustainable materials design. Your role is to provide comprehensive, personalized recommendations for materials based on user needs.
@@ -45,7 +45,7 @@ const ChatPalette = {
   icon: Colors.textSecondary,
 };
 
-// Same bottom clearance other screens use
+// Height of your floating bottom tab bar area so we clear it
 const TABBAR_CLEARANCE = 100;
 
 const Avatar = ({ label = 'AI' }) => (
@@ -55,7 +55,7 @@ const Avatar = ({ label = 'AI' }) => (
 );
 
 const TypingBubble = () => (
-  <View style={[styles.row, styles.assistantRow]}>
+  <View style={[styles.row, styles.assistantRow, { paddingHorizontal: 24 }]}>
     <Avatar />
     <View>
       <View style={[styles.bubble, styles.assistantBubble]}>
@@ -74,7 +74,7 @@ const MessageBubble = ({ role, text, timestamp }) => {
   const isUser = role === 'user';
   if (isUser) {
     return (
-      <View style={[styles.row, styles.userRow]}>
+      <View style={[styles.row, styles.userRow, { paddingHorizontal: 24 }]}>
         <View>
           <View style={[styles.bubble, styles.userBubble]}>
             <Text style={[styles.bubbleText, styles.userText]}>{text}</Text>
@@ -85,7 +85,7 @@ const MessageBubble = ({ role, text, timestamp }) => {
     );
   }
   return (
-    <View style={[styles.row, styles.assistantRow]}>
+    <View style={[styles.row, styles.assistantRow, { paddingHorizontal: 24 }]}>
       <Avatar />
       <View>
         <View style={[styles.bubble, styles.assistantBubble]}>
@@ -110,6 +110,7 @@ const ChatbotScreen = ({ navigation }) => {
     },
   ]);
   const [loading, setLoading] = useState(false);
+  const [inputBarHeight, setInputBarHeight] = useState(72); // measured below
   const listRef = useRef(null);
 
   const canSend = useMemo(() => !!input.trim() && !loading, [input, loading]);
@@ -118,7 +119,7 @@ const ChatbotScreen = ({ navigation }) => {
     if (listRef.current) {
       setTimeout(() => listRef.current.scrollToEnd({ animated: true }), 120);
     }
-  }, [messages, loading]);
+  }, [messages, loading, inputBarHeight]);
 
   const formatTimestamp = () => new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
@@ -169,11 +170,14 @@ const ChatbotScreen = ({ navigation }) => {
     <MessageBubble role={item.role} text={item.text} timestamp={item.timestamp} />
   );
 
+  // Exact padding so last message sits above the input and the floating tab bar
+  const listBottomPadding = inputBarHeight + TABBAR_CLEARANCE + 8;
+
   return (
     <View style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor={ChatPalette.appBarBg} />
 
-      {/* App Bar — exactly like HomeScreen */}
+      {/* App Bar — matches your other screens */}
       <View style={styles.appBar}>
         <View style={styles.appBarLeft}>
           <Text style={styles.appBarTitle}>Materials Assistant</Text>
@@ -190,7 +194,7 @@ const ChatbotScreen = ({ navigation }) => {
       <KeyboardAvoidingView
         style={styles.chatContainer}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? TABBAR_CLEARANCE : 0}
       >
         {/* Messages */}
         <FlatList
@@ -198,14 +202,23 @@ const ChatbotScreen = ({ navigation }) => {
           data={messages}
           keyExtractor={(item) => item.id}
           renderItem={renderItem}
-          contentContainerStyle={[styles.listContent, { paddingBottom: 250 }]}
+          contentContainerStyle={[styles.listContent, { paddingBottom: listBottomPadding }]}
           showsVerticalScrollIndicator={false}
         />
 
         {loading && <TypingBubble />}
 
-        {/* Input bar */}
-        <View style={[styles.inputContainer, { paddingBottom: insets.bottom + 16 }]}>
+        {/* Input bar — normal flow, raised above the tab bar */}
+        <View
+          style={[
+            styles.inputContainer,
+            {
+              paddingBottom: insets.bottom + 16,
+              marginBottom: TABBAR_CLEARANCE, // <- lifts it above the floating tab bar
+            },
+          ]}
+          onLayout={(e) => setInputBarHeight(e.nativeEvent.layout.height)}
+        >
           <View style={styles.inputWrapper}>
             <TouchableOpacity style={styles.leftIconBtn}>
               <Ionicons name="attach-outline" size={22} color={ChatPalette.icon} />
@@ -250,40 +263,29 @@ const styles = StyleSheet.create({
   chatContainer: {
     flex: 1,
   },
+
+  // App bar spacing that matches Profile/Explore
   appBar: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingTop: 56,
     paddingBottom: 12,
-    paddingHorizontal: 24,
+    paddingHorizontal: 24, // your Explore screenshot shows 24
     backgroundColor: ChatPalette.appBarBg,
     borderBottomWidth: 1,
     borderBottomColor: ChatPalette.border,
   },
-  appBarLeft: {
-    flex: 1,
-  },
-  appBarRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  appBarTitle: {
-    color: ChatPalette.appBarText,
-    fontSize: 20,
-    fontWeight: '700',
-  },
-  appBarSubtitle: {
-    color: ChatPalette.appBarSecondary,
-    fontSize: 12,
-    marginTop: 4,
-  },
+  appBarLeft: { flex: 1 },
+  appBarRight: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  appBarTitle: { color: ChatPalette.appBarText, fontSize: 20, fontWeight: '700' },
+  appBarSubtitle: { color: ChatPalette.appBarSecondary, fontSize: 12, marginTop: 4 },
   iconBtn: { padding: 8, borderRadius: 20 },
+
+  // Messages area uses the same side/top padding as other screens
   listContent: {
     paddingHorizontal: 24,
     paddingTop: 16,
-    paddingBottom: 20,
   },
 
   // Bubbles
@@ -341,13 +343,13 @@ const styles = StyleSheet.create({
   userTimestamp: { textAlign: 'right' },
   assistantTimestamp: { textAlign: 'left' },
 
+  // Input bar — consistent look; not absolute
   inputContainer: {
     backgroundColor: ChatPalette.appBarBg,
     borderTopWidth: StyleSheet.hairlineWidth,
     borderTopColor: ChatPalette.border,
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    paddingBottom: 16,
+    paddingHorizontal: 24, // matches content padding
+    paddingTop: 12,
   },
   inputWrapper: {
     flexDirection: 'row',
