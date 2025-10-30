@@ -7,9 +7,9 @@ const FALLBACK_MODELS = [
 ];
 
 // NOTE: Replace this with your OpenAI API key
-// const DEFAULT_API_KEY = 'REPLACE KEY CHARVIK';
+const DEFAULT_API_KEY = '';
 
-// export const getEffectiveOpenAIApiKey = async () => DEFAULT_API_KEY;
+const getEffectiveOpenAIApiKey = async () => DEFAULT_API_KEY;
 
 const buildRequest = (prompt, systemPrompt, messages = null) => {
   if (messages) {
@@ -68,12 +68,7 @@ const buildImageRequest = (prompt, systemPrompt, base64Image) => {
 
 // Call OpenAI API for text generation
 export const generateOpenAISuggestion = async (prompt, systemPrompt, messages = null) => {
-  // TODO: Configure your OpenAI API key
-  const apiKey = process.env.OPENAI_API_KEY || 'YOUR_OPENAI_API_KEY_HERE';
-  
-  if (apiKey === 'YOUR_OPENAI_API_KEY_HERE') {
-    throw new Error('OpenAI API key not configured. Please add your API key to utils/openaiClient.js');
-  }
+  const apiKey = await getEffectiveOpenAIApiKey();
 
   const request = buildRequest(prompt, systemPrompt, messages);
 
@@ -121,12 +116,7 @@ export const generateOpenAISuggestion = async (prompt, systemPrompt, messages = 
 
 // Call OpenAI API for image analysis
 export const generateOpenAIImageAnalysis = async (prompt, systemPrompt, base64Image) => {
-  // TODO: Configure your OpenAI API key
-  const apiKey = process.env.OPENAI_API_KEY || 'YOUR_OPENAI_API_KEY_HERE';
-  
-  if (apiKey === 'YOUR_OPENAI_API_KEY_HERE') {
-    throw new Error('OpenAI API key not configured. Please add your API key to utils/openaiClient.js');
-  }
+  const apiKey = await getEffectiveOpenAIApiKey();
 
   // Try with original image first
   let request = buildImageRequest(prompt, systemPrompt, base64Image);
@@ -173,8 +163,7 @@ const compressImage = async (base64Image) => {
 
 // Helper function to make the actual API request
 const makeImageAnalysisRequest = async (request) => {
-  // TODO: Configure your OpenAI API key
-  const apiKey = process.env.OPENAI_API_KEY || 'YOUR_OPENAI_API_KEY_HERE';
+  const apiKey = await getEffectiveOpenAIApiKey();
   
   try {
     console.log('Making OpenAI API request...');
@@ -215,10 +204,8 @@ const makeImageAnalysisRequest = async (request) => {
 export const generateGeminiSuggestion = generateOpenAISuggestion;
 export const generateGeminiImageAnalysis = generateOpenAIImageAnalysis;
 
-// Helper function to get API key (for backward compatibility)
-export const getEffectiveOpenAIApiKey = async () => {
-  return process.env.OPENAI_API_KEY || 'YOUR_OPENAI_API_KEY_HERE';
-};
+// Export the function for external use
+export { getEffectiveOpenAIApiKey };
 
 export default {
   getEffectiveOpenAIApiKey,

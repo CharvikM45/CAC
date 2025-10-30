@@ -90,7 +90,7 @@ const MaterialPickerModal = ({ visible, onClose, onSelectMaterial }) => {
           <TouchableOpacity style={styles.closeButton} onPress={onClose}>
             <Ionicons name="close" size={24} color={Colors.text} />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Share Material</Text>
+          <Text style={styles.headerTitle}>Simulate a Material</Text>
           <View style={styles.placeholder} />
         </View>
 

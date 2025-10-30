@@ -416,46 +416,57 @@ REMEMBER: Respond with ONLY the JSON object. No additional text, explanations, o
 
       <View style={styles.content}>
         {/* Capture / Gallery card */}
-        <View style={styles.section}>
-          {capturedImage ? (
-            <View style={styles.imageContainer}>
-              <Image source={{ uri: capturedImage.uri }} style={styles.capturedImage} />
-              {isAnalyzing && (
-                <View style={styles.analyzingOverlay}>
-                  <ActivityIndicator size="large" color={Colors.primary} />
-                  <Text style={styles.analyzingText}>Analyzing material...</Text>
-                </View>
-              )}
-              <View style={{ height: 8 }} />
+        {capturedImage ? (
+          <View style={styles.fullImageContainer}>
+            <Image source={{ uri: capturedImage.uri }} style={styles.fullImage} />
+            {isAnalyzing && (
+              <View style={styles.analyzingOverlay}>
+                <ActivityIndicator size="large" color={Colors.primary} />
+                <Text style={styles.analyzingText}>Analyzing material...</Text>
+              </View>
+            )}
+            <View style={styles.imageActions}>
               <TouchableOpacity
-                style={[styles.button, styles.secondaryButton]}
+                style={[styles.button, styles.removeButton]}
                 onPress={() => setCapturedImage(null)}
                 disabled={isAnalyzing}
               >
-                <Ionicons name="trash-outline" size={20} color={Colors.primary} />
-                <Text style={styles.secondaryButtonText}>Remove Image</Text>
+                <Ionicons name="trash-outline" size={20} color="white" />
+                <Text style={styles.removeButtonText}>Remove Image</Text>
               </TouchableOpacity>
             </View>
-          ) : (
-            <View style={styles.actionsRow}>
-              <TouchableOpacity
-                style={[styles.button, styles.primaryButton, styles.actionHalf]}
-                onPress={() => setShowCamera(true)}
-              >
-                <Ionicons name="camera" size={22} color={Colors.secondary} />
-                <Text style={styles.primaryButtonText}>Take Photo</Text>
-              </TouchableOpacity>
+          </View>
+        ) : (
+          <View style={styles.section}>
+            <View style={styles.initialContent}>
+              <View style={styles.iconContainer}>
+                <Ionicons name="camera-outline" size={48} color={Colors.primary} />
+              </View>
+              <Text style={styles.initialTitle}>Material Detection</Text>
+              <Text style={styles.initialDescription}>
+                Take a photo or choose from your gallery to identify materials and discover sustainable alternatives
+              </Text>
+              
+              <View style={styles.actionsRow}>
+                <TouchableOpacity
+                  style={[styles.button, styles.primaryButton, styles.actionHalf]}
+                  onPress={() => setShowCamera(true)}
+                >
+                  <Ionicons name="camera" size={22} color={Colors.secondary} />
+                  <Text style={styles.primaryButtonText}>Take Photo</Text>
+                </TouchableOpacity>
 
-              <TouchableOpacity
-                style={[styles.button, styles.darkButton, styles.actionHalf]}
-                onPress={pickImageFromGallery}
-              >
-                <Ionicons name="images" size={22} color="white" />
-                <Text style={styles.darkButtonText}>Choose from Gallery</Text>
-              </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.button, styles.secondaryButton, styles.actionHalf]}
+                  onPress={pickImageFromGallery}
+                >
+                  <Ionicons name="images" size={22} color={Colors.primary} />
+                  <Text style={styles.secondaryButtonText}>Choose from Gallery</Text>
+                </TouchableOpacity>
+              </View>
             </View>
-          )}
-        </View>
+          </View>
+        )}
 
         {/* Analysis results (cards) */}
         {renderAnalysisResult()}
@@ -527,10 +538,42 @@ const styles = StyleSheet.create({
   actionsRow: {
     flexDirection: 'row',
     gap: 12,
+    marginTop: 24,
+  },
+  
+  // Initial screen content
+  initialContent: {
+    alignItems: 'center',
+    paddingVertical: 20,
+  },
+  iconContainer: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: Colors.primary + '15',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 20,
+  },
+  initialTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: Colors.text,
+    marginBottom: 12,
+    textAlign: 'center',
+  },
+  initialDescription: {
+    fontSize: 16,
+    color: Colors.textSecondary,
+    textAlign: 'center',
+    lineHeight: 24,
+    marginBottom: 8,
+    paddingHorizontal: 8,
   },
   primaryButton: {
     backgroundColor: Colors.primary,
     borderWidth: 0,
+    minHeight: 48,
   },
   primaryButtonText: {
     fontSize: 16,
@@ -542,6 +585,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.card,
     borderWidth: 1,
     borderColor: Colors.primary,
+    minHeight: 48,
   },
   darkButtonText: {
     fontSize: 16,
@@ -550,13 +594,14 @@ const styles = StyleSheet.create({
     marginLeft: 8,
   },
   secondaryButton: {
-    backgroundColor: Colors.card,
-    borderWidth: 1,
-    borderColor: Colors.border,
+    backgroundColor: 'transparent',
+    borderWidth: 2,
+    borderColor: Colors.primary,
+    minHeight: 48,
   },
   secondaryButtonText: {
     fontSize: 16,
-    fontWeight: '500',
+    fontWeight: '600',
     color: Colors.primary,
     marginLeft: 8,
   },
@@ -598,14 +643,53 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.primary,
   },
 
-  // Image preview
+  // Full-size image container
+  fullImageContainer: {
+    marginBottom: 20,
+    position: 'relative',
+    borderRadius: 16,
+    overflow: 'hidden',
+    backgroundColor: Colors.surface,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  fullImage: {
+    width: '100%',
+    height: 300,
+    resizeMode: 'cover',
+  },
+  imageActions: {
+    position: 'absolute',
+    bottom: 16,
+    right: 16,
+    left: 16,
+    alignItems: 'center',
+  },
+  removeButton: {
+    backgroundColor: 'rgba(0,0,0,0.7)',
+    borderWidth: 0,
+    minHeight: 44,
+    paddingHorizontal: 20,
+  },
+  removeButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: 'white',
+    marginLeft: 8,
+  },
+  
+  // Image preview (legacy)
   imageContainer: {
     alignItems: 'center',
     position: 'relative',
+    marginBottom: 20,
   },
   capturedImage: {
-    width: screenWidth - 48,
-    height: 280,
+    width: '100%',
+    height: 300,
     borderRadius: 16,
     marginBottom: 8,
     borderWidth: StyleSheet.hairlineWidth,
@@ -615,12 +699,12 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.08,
     shadowRadius: 6,
     elevation: 2,
+    resizeMode: 'cover',
   },
   analyzingOverlay: {
     position: 'absolute',
     top: 0, left: 0, right: 0, bottom: 0,
     backgroundColor: 'rgba(0,0,0,0.7)',
-    borderRadius: 15,
     justifyContent: 'center',
     alignItems: 'center',
   },

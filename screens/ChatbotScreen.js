@@ -9,6 +9,8 @@ import {
   KeyboardAvoidingView,
   Platform,
   StatusBar,
+  Keyboard,
+  TouchableWithoutFeedback,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '../constants/colors';
@@ -174,84 +176,89 @@ const ChatbotScreen = ({ navigation }) => {
   const listBottomPadding = inputBarHeight + TABBAR_CLEARANCE + 8;
 
   return (
-    <View style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor={ChatPalette.appBarBg} />
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+      <View style={styles.container}>
+        <StatusBar barStyle="light-content" backgroundColor={ChatPalette.appBarBg} />
 
-      {/* App Bar — matches your other screens */}
-      <View style={styles.appBar}>
-        <View style={styles.appBarLeft}>
-          <Text style={styles.appBarTitle}>Materials Assistant</Text>
-          <Text style={styles.appBarSubtitle}>Active now</Text>
-        </View>
-        <View style={styles.appBarRight}>
-          <TouchableOpacity style={styles.iconBtn}>
-            <Ionicons name="search" size={22} color={ChatPalette.icon} />
-          </TouchableOpacity>
-          <ProfileButton onPress={() => navigation.navigate('Profile')} userData={null} />
-        </View>
-      </View>
-
-      <KeyboardAvoidingView
-        style={styles.chatContainer}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? TABBAR_CLEARANCE : 0}
-      >
-        {/* Messages */}
-        <FlatList
-          ref={listRef}
-          data={messages}
-          keyExtractor={(item) => item.id}
-          renderItem={renderItem}
-          contentContainerStyle={[styles.listContent, { paddingBottom: listBottomPadding }]}
-          showsVerticalScrollIndicator={false}
-        />
-
-        {loading && <TypingBubble />}
-
-        {/* Input bar — normal flow, raised above the tab bar */}
-        <View
-          style={[
-            styles.inputContainer,
-            {
-              paddingBottom: insets.bottom + 16,
-              marginBottom: TABBAR_CLEARANCE, // <- lifts it above the floating tab bar
-            },
-          ]}
-          onLayout={(e) => setInputBarHeight(e.nativeEvent.layout.height)}
-        >
-          <View style={styles.inputWrapper}>
-            <TouchableOpacity style={styles.leftIconBtn}>
-              <Ionicons name="attach-outline" size={22} color={ChatPalette.icon} />
+        {/* App Bar — matches your other screens */}
+        <View style={styles.appBar}>
+          <View style={styles.appBarLeft}>
+            <Text style={styles.appBarTitle}>Materials Assistant</Text>
+            <Text style={styles.appBarSubtitle}>Active now</Text>
+          </View>
+          <View style={styles.appBarRight}>
+            <TouchableOpacity style={styles.iconBtn}>
+              <Ionicons name="search" size={22} color={ChatPalette.icon} />
             </TouchableOpacity>
-            <TouchableOpacity style={styles.leftIconBtn}>
-              <Ionicons name="image-outline" size={22} color={ChatPalette.icon} />
-            </TouchableOpacity>
-
-            <TextInput
-              value={input}
-              onChangeText={setInput}
-              placeholder="Text message"
-              placeholderTextColor={ChatPalette.placeholder}
-              style={styles.input}
-              multiline
-              maxLength={500}
-            />
-
-            <TouchableOpacity
-              style={[styles.sendBtn, !canSend && styles.micBtn]}
-              onPress={canSend ? handleSend : undefined}
-              disabled={!canSend}
-            >
-              {canSend ? (
-                <Ionicons name="send" size={20} color="#FFFFFF" />
-              ) : (
-                <Ionicons name="mic" size={20} color={ChatPalette.icon} />
-              )}
-            </TouchableOpacity>
+            <ProfileButton onPress={() => navigation.navigate('Profile')} userData={null} />
           </View>
         </View>
-      </KeyboardAvoidingView>
-    </View>
+
+        <KeyboardAvoidingView
+          style={styles.chatContainer}
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          keyboardVerticalOffset={Platform.OS === 'ios' ? -50 : 0}
+        >
+          {/* Messages */}
+          <FlatList
+            ref={listRef}
+            data={messages}
+            keyExtractor={(item) => item.id}
+            renderItem={renderItem}
+            contentContainerStyle={[styles.listContent, { paddingBottom: listBottomPadding }]}
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+          />
+
+          {loading && <TypingBubble />}
+
+          {/* Input bar — normal flow, raised above the tab bar */}
+          <View
+            style={[
+              styles.inputContainer,
+              {
+                paddingBottom: Math.max(insets.bottom, 16),
+                marginBottom: TABBAR_CLEARANCE, // Keep margin to clear tab bar
+              },
+            ]}
+            onLayout={(e) => setInputBarHeight(e.nativeEvent.layout.height)}
+          >
+            <View style={styles.inputWrapper}>
+              <TouchableOpacity style={styles.leftIconBtn}>
+                <Ionicons name="attach-outline" size={22} color={ChatPalette.icon} />
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.leftIconBtn}>
+                <Ionicons name="image-outline" size={22} color={ChatPalette.icon} />
+              </TouchableOpacity>
+
+              <TextInput
+                value={input}
+                onChangeText={setInput}
+                placeholder="Text message"
+                placeholderTextColor={ChatPalette.placeholder}
+                style={styles.input}
+                multiline
+                maxLength={500}
+                returnKeyType="default"
+                blurOnSubmit={false}
+              />
+
+              <TouchableOpacity
+                style={[styles.sendBtn, !canSend && styles.micBtn]}
+                onPress={canSend ? handleSend : undefined}
+                disabled={!canSend}
+              >
+                {canSend ? (
+                  <Ionicons name="send" size={20} color="#FFFFFF" />
+                ) : (
+                  <Ionicons name="mic" size={20} color={ChatPalette.icon} />
+                )}
+              </TouchableOpacity>
+            </View>
+          </View>
+        </KeyboardAvoidingView>
+      </View>
+    </TouchableWithoutFeedback>
   );
 };
 
@@ -350,6 +357,7 @@ const styles = StyleSheet.create({
     borderTopColor: ChatPalette.border,
     paddingHorizontal: 24, // matches content padding
     paddingTop: 12,
+    paddingBottom: 12,
   },
   inputWrapper: {
     flexDirection: 'row',
