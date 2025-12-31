@@ -184,7 +184,6 @@ const Molecular3DViewer = ({ smiles, structureType, molecularNotes }) => {
             const PUBCHEM_3D = SMILES ? \`https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/smiles/\${SMILES_ENC}/SDF?record_type=3d\` : null;
             const PUBCHEM_2D = SMILES ? \`https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/smiles/\${SMILES_ENC}/SDF?record_type=2d\` : null;
 
-            // Robust multi-CDN loader for 3Dmol
             const CDN_LIST = [
               'https://3dmol.org/build/3Dmol-min.js',
               'https://cdn.jsdelivr.net/npm/3dmol/build/3Dmol-min.js',
